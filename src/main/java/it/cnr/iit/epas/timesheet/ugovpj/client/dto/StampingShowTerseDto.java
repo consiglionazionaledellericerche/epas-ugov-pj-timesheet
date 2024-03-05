@@ -14,23 +14,48 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * DTO per l'esportazione via REST delle informazioni 
+ * principali di una timbratura.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@ToString
+@Data
+public class StampingShowTerseDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
+  private Long id;
+  private LocalDateTime date;
+  private WayType way;
+  private String stampType;
+  private String place;
+  private String reason;
+  private boolean markedByAdmin;
+  private boolean markedByEmployee;
+  private String note;
+
+  /**
+   * Ingresso/Uscita.
+   */
+  public enum WayType {
+    in("in"),
+    out("out");
+
+    private String description;
+
+    WayType(String description) {
+      this.description = description;
+    }
+
+    public String getDescription() {
+      return this.description;
+    }
   }
-
 }

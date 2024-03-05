@@ -14,23 +14,23 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+package it.cnr.iit.epas.timesheet.ugovpj.controller;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Costanti utili per le definizioni delle rotte delle API.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+public class ApiRoutes {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private static final String ONLY_DIGITS_REGEX = "^\\d+$";
+
+  public static final String BASE_PATH = "/rest/v1";
+
+  public static final String ID_REGEX = "{id:" + ONLY_DIGITS_REGEX + "}";
+
+  public static final String LIST = "";
+  public static final String SHOW = "/" + ID_REGEX;
 
 }

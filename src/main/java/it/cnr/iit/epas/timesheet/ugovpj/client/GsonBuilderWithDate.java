@@ -14,23 +14,27 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import com.fatboyindustrial.gsonjavatime.Converters;
+import com.google.gson.GsonBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Configura il gson builder ad utilizzare gli adapter necessario per la gestione
+ * delle data java.time.
  *
  * @author Cristian Lucchesi
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Component
+public class GsonBuilderWithDate {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
+  @Bean
+  public GsonBuilder gsonBuilder() {
+    GsonBuilder builder = new GsonBuilder();
+    Converters.registerAll(builder).serializeNulls();
+    return Converters.registerAll(builder).serializeNulls();
   }
 
 }

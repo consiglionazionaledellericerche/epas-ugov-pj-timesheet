@@ -14,23 +14,27 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import com.google.common.collect.Lists;
+import java.util.List;
+import lombok.Data;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * DTO per l'esportazione via REST delle informazioni del riepilogo mensile
+ * assenze/presenze in un determinato mese.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Data
+public class PersonMonthRecapDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private Integer year;
+  private Integer month;
+  private PersonShowTerseDto person;
+  private int basedWorkingDays;
+
+  private List<PersonDayShowTerseDto> personDays = Lists.newArrayList();
 
 }

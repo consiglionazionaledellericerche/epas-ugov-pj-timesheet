@@ -14,23 +14,34 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import com.google.common.collect.Lists;
+import java.time.LocalDate;
+import java.util.List;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * DTO per esportare via JSON le informazioni principali di un PersonDay.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Data
+@EqualsAndHashCode(of = "id")
+public class PersonDayShowTerseDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private Long id;
+  private LocalDate date;
+  private int timeAtWork;
+  private int difference;
+  private int progressive;
+  private boolean isTicketAvailable;
+  private boolean isHoliday;
+
+  //private List<StampingShowTerseDto> stampings = Lists.newArrayList();
+
+  private List<AbsenceShowTerseDto> absences = Lists.newArrayList();
 
 }
