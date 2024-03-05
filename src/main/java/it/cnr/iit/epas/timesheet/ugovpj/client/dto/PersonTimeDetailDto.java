@@ -14,23 +14,27 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import java.time.LocalDate;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Dto per esportare via REST le informazioni sullle righe di dettagli del tempo e assenze
+ * di un dipendente.
  *
  * @author Cristian Lucchesi
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@ToString
+@Data
+public class PersonTimeDetailDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private Long id;
+  private LocalDate date;
+  private String number;
+  private int minutes;
+  private int permanent = 0;
+  private String type;
 
 }

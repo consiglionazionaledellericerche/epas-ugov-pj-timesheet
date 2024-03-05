@@ -14,23 +14,29 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.config;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Contenitore dei parametri di configurazione per l'accesso ad ePAS.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Data
+@EqualsAndHashCode
+@ToString
+@Configuration
+@ConfigurationProperties(prefix = "epas")
+public class EpasConfig {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private String serverUrl = "http://localhost:9080";
+  private String username;
+  private String password;
 
 }

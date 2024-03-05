@@ -14,23 +14,33 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * DTO per l'esportazione via REST delle informazioni 
+ * principali di un'assenza.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Data
+@EqualsAndHashCode(of = "id")
+public class AbsenceShowTerseDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private Long id;
+  private LocalDate date;
+  private String code;
+  private Long absenceTypeId;
+  private Integer justifiedTime;
+  private String justifiedType;
+  private String note;
+  private String externalId;
+  private String externalTypeId;
+  private LocalDateTime updatedAt;
 
 }

@@ -14,23 +14,24 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import lombok.Data;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Dati esportati in Json per la Persona.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
-
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+@Data
+public class PersonShowTerseDto {
+  
+  private Long id;
+  private String fullname;
+  private String fiscalCode;
+  private String email;
+  private String number; //Matricola
+  private String eppn;
 
 }

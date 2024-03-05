@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -14,23 +14,17 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
+import org.mapstruct.Mapper;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Mapping dei dati delle Entity nei rispettivi DTO.
  *
- * @author Cristian Lucchesi
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Mapper(componentModel = "spring")
+public interface PersonTimeDetailMapper {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
-
+  PersonTimeDetailDto convert(PersonTimeDetail detail);
 }

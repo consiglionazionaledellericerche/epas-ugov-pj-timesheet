@@ -1,7 +1,7 @@
-CREATE TABLE IF NOT EXISTS ie_pj_marcature (
-    id_ie_pj_marcature BIGSERIAL PRIMARY KEY,
-    data DATE,
-    matricola TEXT,
-    marcatura int,
-    fl_consolidata int,
-    tipo_marcatura TEXT);
+CREATE TABLE IF NOT EXISTS IE_PJ_MARCATURE (
+    ID_IE_PJ_MARCATURE BIGSERIAL PRIMARY KEY,
+    DATA DATE,
+    MATRICOLA TEXT,
+    MARCATURA int,
+    FL_CONSOLIDATA int,
+    TIPO_MARCATURA TEXT);

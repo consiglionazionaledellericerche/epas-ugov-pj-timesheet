@@ -14,23 +14,39 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Dati esportati in Json per l'Ufficio.
  *
  * @author Cristian Lucchesi
+ *
  */
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@ToString
+@Data
+public class OfficeDto {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
-  }
+  private Long id;
+  private Long perseoId;
+  private String name;
+
+  //Codice della sede, per esempio per la sede di Pisa è "044000"
+  private String code;
+
+  //sedeId, serve per l'invio degli attestati, per esempio per la sede di Pisa è "223400"
+  private String codeId;
+  private String address;
+  private LocalDate joiningDate;
+  private LocalDate beginDate;
+  private LocalDate endDate;
+
+  private Long instituteId;
+  private boolean headQuarter = false;
+  private LocalDateTime updatedAt;
 
 }
