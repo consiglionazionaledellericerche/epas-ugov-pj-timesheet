@@ -17,6 +17,7 @@
 		<java.version>17</java.version>
 		<spring-cloud.version>2023.0.0</spring-cloud.version>
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
+		<jib.maven-plugin.version>3.4.0</jib.maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -140,7 +141,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-<plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
@@ -164,6 +165,18 @@
 						</path>
 						<!-- other annotation processors -->
 					</annotationProcessorPaths>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>${jib.maven-plugin.version}</version>
+				<configuration>
+					<from><image>eclipse-temurin:17-jre@sha256:e64527874b17</image></from>
+					<container>
+						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
+						<mainClass>it.cnr.iit.epas.timesheet.ugovpj.UgoPjApplication</mainClass>
+					</container>
 				</configuration>
 			</plugin>
 		</plugins>
