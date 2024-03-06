@@ -16,6 +16,7 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.service;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
@@ -39,6 +40,12 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+/**
+ * Servizio con i metodi che effettuano la sincronizzazione dei dati del tempo a lavoro
+ * e delle assenze del personale sulle tabelle di ugog-pj-timesheet.
+ *
+ * @author Cristian Lucchesi
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -50,13 +57,15 @@ public class SyncService {
   private final EpasClient epasClient;
   private final TimesheetConfig timesheetConfig;
 
-  private List<PersonTimeDetail> syncPersonDayTimeAtWork(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
-    List<PersonTimeDetail> details = Lists.newArrayList();
+  /**
+   * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
+   */
+  private Optional<PersonTimeDetail> syncPersonDayTimeAtWork(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
     //Inserimento resoconto tempo a lavoro da timbrature
     if (personDay.getTimeAtWork() == 0) {
       log.trace("PersonDay id={} person.number={} ignored time at work, it's zero", 
-          personDay.getId(), person.getFullname());
-      return details;
+          personDay.getId(), person.getNumber());
+      return Optional.empty();
     }
     val personTimeDetail = 
         PersonTimeDetail.builder()
@@ -65,10 +74,12 @@ public class SyncService {
           .type(timesheetConfig.getStampingsType())
           .build();
     repo.save(personTimeDetail);
-    details.add(personTimeDetail);
-    return details;
+    return Optional.of(personTimeDetail);
   }
 
+  /**
+   * Sincronizza i dati delle assenze di una persona in un giorno specifico.
+   */
   private List<PersonTimeDetail> syncPersonDayAbsences(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
     Map<String, Integer> absenceMap = Maps.newHashMap();
     val timeDetailType = timeDetailTypes();
@@ -93,25 +104,37 @@ public class SyncService {
             .build();
       repo.save(personTimeDetail);
       details.add(personTimeDetail);
-
     });
     return details;
   }
 
+  /**
+   * Sincronizza i dati di presenze e assenze di una persona in un giorno specifico.
+   */
   public List<PersonTimeDetail> syncPersonDay(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
+    log.trace("Sincronizzazione personDay {}", personDay);
     List<PersonTimeDetail> details = Lists.newArrayList();
     //Inserimento resoconto tempo a lavoro da timbrature
-    details.addAll(syncPersonDayTimeAtWork(person, personDay));
+    val timeAtWorkDetail = syncPersonDayTimeAtWork(person, personDay);
+    if (timeAtWorkDetail.isPresent()) {
+      details.add(timeAtWorkDetail.get());
+    }
     //Inserimento delle assenze con externalGroupId rilevante, raggruppate per externalGroupId
     details.addAll(syncPersonDayAbsences(person, personDay));
     return details;
   }
 
+  /**
+   * Sincronizzata i dati di presenze e assenze di una persona in un mese.
+   */
   public List<PersonTimeDetail> syncPersonMonth(PersonMonthRecapDto monthRecap, Optional<LocalDate> notBefore) {
     List<PersonTimeDetail> details = Lists.newArrayList();
-    
+    if (Strings.isNullOrEmpty(monthRecap.getPerson().getNumber())) {
+      log.info("Ignorata persona {} perché senza matricola", monthRecap.getPerson());
+      return details;
+    }
     monthRecap.getPersonDays().forEach(personDay -> {
-      if (notBefore.isPresent() && !personDay.getDate().isBefore(notBefore.get())) {
+      if (notBefore.isEmpty() || !personDay.getDate().isBefore(notBefore.get())) {
         details.addAll(syncPersonDay(monthRecap.getPerson(), personDay));
       }
     });
@@ -132,11 +155,15 @@ public class SyncService {
       monthRecaps.forEach(monthRecap -> {
         details.addAll(syncPersonMonth(monthRecap, notBefore));
       });
-    log.debug("Fine sincronizzazione dell'ufficio id={} del {} in {} secondi", 
+    log.info("Terminata sincronizzazione dell'ufficio id={} del {} in {} secondi", 
         officeId, yearMonth, ((System.currentTimeMillis() - startTime) / 1000));
     return details;
   }
 
+  /**
+   * Sincronizza i dati di presenze ed assenze del mese passato come parametro per tuti i 
+   * dipendenti presenti in ePAS.
+   */
   public List<PersonTimeDetail> syncMonth(YearMonth yearMonth, Optional<LocalDate> notBefore) {
     List<PersonTimeDetail> details = Lists.newArrayList();
     val offices = epasClient.getActiveOffices(yearMonth.atDay(1));
@@ -163,10 +190,5 @@ public class SyncService {
   private Set<String> timeDetailTypes() {
     return typeRepo.findAll().stream().map(TimeDetailType::getCode).collect(Collectors.toSet());
   }
-  
-  public static void main(String[] args) throws InterruptedException {
-    long startTime = System.currentTimeMillis();
-    Thread.sleep(1000);
-    log.info("Synchronization ended in {} seconds", ((System.currentTimeMillis() - startTime) / 1000));
-  }
+
 }

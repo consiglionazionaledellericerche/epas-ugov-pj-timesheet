@@ -47,6 +47,7 @@ public class AdminController {
   private final EpasClient epasClient;
   private final SyncService syncService;
   private final PersonTimeDetailMapper mapper;
+
   @GetMapping("/offices")
   public ResponseEntity<List<OfficeDto>> offices(
       @RequestParam("atDate")
@@ -68,14 +69,6 @@ public class AdminController {
 
   @PostMapping("/officeMonthRecap")
   public ResponseEntity<List<PersonTimeDetailDto>> syncOfficeMonthRecap(
-      @RequestParam("officeId") Long officeId, @RequestParam("year") int year, @RequestParam("month") int month) {
-    log.info("Ricevuta richiesta aggiornamento del riepilogo mensile per ufficio id={} {}/{}", officeId, month, year);
-    val details = syncService.syncOfficeMonth(officeId, YearMonth.of(year, month), Optional.empty());
-    return ResponseEntity.ok().body(details.stream().map(mapper::convert).collect(Collectors.toList()));
-  }
-
-  @PostMapping("/monthRecap")
-  public ResponseEntity<List<PersonTimeDetailDto>> monthRecap(
       @RequestParam("officeId") Long officeId, @RequestParam("year") int year, @RequestParam("month") int month) {
     log.info("Ricevuta richiesta aggiornamento del riepilogo mensile per ufficio id={} {}/{}", officeId, month, year);
     val details = syncService.syncOfficeMonth(officeId, YearMonth.of(year, month), Optional.empty());
