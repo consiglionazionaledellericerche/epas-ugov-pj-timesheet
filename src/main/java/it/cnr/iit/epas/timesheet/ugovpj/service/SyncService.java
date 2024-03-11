@@ -16,9 +16,24 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.service;
 
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.springframework.stereotype.Service;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
+import io.micrometer.core.annotation.Timed;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonDayShowTerseDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
@@ -28,17 +43,9 @@ import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
 import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.TimeDetailTypeRepo;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 
 /**
  * Servizio con i metodi che effettuano la sincronizzazione dei dati del tempo a lavoro
@@ -56,6 +63,8 @@ public class SyncService {
   
   private final EpasClient epasClient;
   private final TimesheetConfig timesheetConfig;
+
+  private final MeterRegistry meterRegistry;
 
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
@@ -150,6 +159,7 @@ public class SyncService {
     log.debug("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}", 
         officeId, yearMonth, notBefore);
     long startTime = System.currentTimeMillis();
+    Timer.Sample timer = Timer.start(meterRegistry);
     List<PersonTimeDetail> details = Lists.newArrayList();
       val monthRecaps = epasClient.getMonthRecap(officeId, yearMonth.getYear(), yearMonth.getMonthValue());
       monthRecaps.forEach(monthRecap -> {
@@ -157,6 +167,11 @@ public class SyncService {
       });
     log.info("Terminata sincronizzazione dell'ufficio id={} del {} in {} secondi", 
         officeId, yearMonth, ((System.currentTimeMillis() - startTime) / 1000));
+    timer.stop(Timer.builder("epas_sync_office_month")
+        .description("Timer della sincronizzazione dei dati di un mese di un ufficio")
+        .tag("officeId", String.valueOf(officeId))
+        .tag("yearMonth", yearMonth.toString())
+        .register(meterRegistry));
     return details;
   }
 
@@ -173,6 +188,7 @@ public class SyncService {
     return details;
   }
 
+  @Timed(value = "epas_sync_all_time", description = "Time taken to sync all the details")
   public List<PersonTimeDetail> syncAll() {
     List<PersonTimeDetail> details = Lists.newArrayList();
     LocalDate startingDate = LocalDate.now().minusDays(timesheetConfig.getDaysInThePast());
@@ -180,9 +196,12 @@ public class SyncService {
     log.info("Starting synchronization since {}", startingDate);
     YearMonth yearMonth = YearMonth.from(startingDate);
     while (!yearMonth.isAfter(YearMonth.from(LocalDate.now()))) {
-      syncMonth(yearMonth, Optional.of(startingDate));
+      details.addAll(syncMonth(yearMonth, Optional.of(startingDate)));
       yearMonth = yearMonth.plusMonths(1);
     }
+    Gauge.builder("epas_synch_details_count", () -> details.size())
+      .description("A current number of books in the system")
+      .register(meterRegistry);
     log.info("Synchronization ended in {} seconds", ((System.currentTimeMillis() - startTime) / 1000));
     return details;
   }
@@ -190,5 +209,4 @@ public class SyncService {
   private Set<String> timeDetailTypes() {
     return typeRepo.findAll().stream().map(TimeDetailType::getCode).collect(Collectors.toSet());
   }
-
 }
