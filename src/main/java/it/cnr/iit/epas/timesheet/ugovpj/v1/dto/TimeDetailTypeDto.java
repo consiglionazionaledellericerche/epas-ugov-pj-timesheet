@@ -14,15 +14,16 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
  * Dto per esportare via REST le tipologie di presenze/assenza presenti
- * nella tabella di frontiera Oracle
+ * nella tabella di frontiera Oracle.
  *
  * @author Cristian Lucchesi
  */
@@ -32,6 +33,7 @@ import lombok.ToString;
 public class TimeDetailTypeDto {
 
   private Long id;
+  @NotNull
   private String code; 
   private String description;
   private String projectCode;

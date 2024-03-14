@@ -14,24 +14,30 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.controller.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailMapper;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.TimeDetailTypeDto;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.TimeDetailTypeRepo;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.DtoToEntityConverter;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.TimeDetailTypeDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -46,6 +52,7 @@ public class TimesheetController {
   private final TimeDetailTypeRepo timeDetailTypeRepo;
   private final PersonTimeDetailRepo personTimeDetailRepo;
   private final PersonTimeDetailMapper mapper;
+  private final DtoToEntityConverter dtoToEntityConverter;
   
   @GetMapping("/timeDetailTypes")
   public ResponseEntity<List<TimeDetailTypeDto>> timeDetailTypes() {
@@ -69,5 +76,15 @@ public class TimesheetController {
     log.debug("Ricevuta richiesta presenze/assenze di tutte le persone");
     val details = personTimeDetailRepo.findAll(pageable).map(mapper::convert);
     return ResponseEntity.ok().body(details);
+  }
+
+  @PutMapping("/timeDetailTypes")
+  public ResponseEntity<TimeDetailTypeDto> create(
+      @NotNull @Valid @RequestBody TimeDetailTypeDto detailTypeDto) {
+    log.debug("TimesheetController::create detailTypeDto = {}", detailTypeDto);
+    val result = dtoToEntityConverter.createEntity(detailTypeDto);
+    timeDetailTypeRepo.save(result);
+    log.info("Creato Result {}", result);
+    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convert(result));
   }
 }

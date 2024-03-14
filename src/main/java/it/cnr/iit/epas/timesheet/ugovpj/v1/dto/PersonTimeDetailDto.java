@@ -14,21 +14,29 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.repo;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
+import java.time.LocalDate;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
- * Repository per l'accesso e la gestione dei dati del PersonTimeDetail.
+ * Dto per esportare via REST le informazioni sulle righe di dettagli del tempo e assenze
+ * di un dipendente.
  *
  * @author Cristian Lucchesi
  */
-public interface PersonTimeDetailRepo extends JpaRepository<PersonTimeDetail,Long> {
+@NoArgsConstructor
+@ToString
+@Data
+public class PersonTimeDetailDto {
 
-  Page<PersonTimeDetail> findByNumber(String number, Pageable pageable);
+  private Long id;
+  private LocalDate date;
+  private String number;
+  private int minutes;
+  private int permanent = 0;
+  private String type;
 
 }

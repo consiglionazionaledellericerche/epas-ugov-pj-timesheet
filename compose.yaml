@@ -1,15 +1,9 @@
 services:
-#  oracle:
-#    image: 'gvenzl/oracle-free:latest'
-#    environment:
-#      - 'ORACLE_PASSWORD=secret'
-#    ports:
-#      - '1521'
-  postgres:
-    image: 'postgres:latest'
+  oracle:
+    image: 'gvenzl/oracle-free:latest'
     environment:
-      - 'POSTGRES_DB=ugov-pj-timesheet'
-      - 'POSTGRES_PASSWORD=secret'
-      - 'POSTGRES_USER=cnr'
+      - 'ORACLE_PASSWORD=secret'
+      - 'APP_USER=cnr'
+      - 'APP_USER_PASSWORD=secret'
     ports:
-      - '5432'
+      - '1521:1521'

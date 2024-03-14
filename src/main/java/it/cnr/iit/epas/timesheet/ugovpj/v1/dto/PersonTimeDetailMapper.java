@@ -14,12 +14,13 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
+
+import org.mapstruct.Mapper;
+import org.mapstruct.MappingTarget;
 
 import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
 import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
-
-import org.mapstruct.Mapper;
 
 /**
  * Mapping dei dati delle Entity nei rispettivi DTO.
@@ -32,4 +33,5 @@ public interface PersonTimeDetailMapper {
 
   TimeDetailTypeDto convert(TimeDetailType type);
 
+  void update(@MappingTarget TimeDetailType type, TimeDetailTypeDto dto);
 }
