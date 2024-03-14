@@ -183,7 +183,7 @@ public class SyncService {
     List<PersonTimeDetail> details = Lists.newArrayList();
     val offices = epasClient.getActiveOffices(yearMonth.atDay(1));
     offices.forEach(office -> {
-      syncOfficeMonth(office.getId(), yearMonth, notBefore);
+      details.addAll(syncOfficeMonth(office.getId(), yearMonth, notBefore));
     });
     return details;
   }
@@ -204,6 +204,10 @@ public class SyncService {
       .register(meterRegistry);
     log.info("Synchronization ended in {} seconds", ((System.currentTimeMillis() - startTime) / 1000));
     return details;
+  }
+
+  public void deleteAllPersonTimeDetails() {
+    repo.deleteAll();
   }
 
   private Set<String> timeDetailTypes() {

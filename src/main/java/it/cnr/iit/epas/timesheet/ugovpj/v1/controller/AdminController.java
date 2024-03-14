@@ -14,14 +14,16 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.controller.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.controller;
 
 import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.OfficeDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailMapper;
 import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
+
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
@@ -32,6 +34,7 @@ import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -76,9 +79,16 @@ public class AdminController {
   }
 
   @PostMapping("/syncAll")
-  public ResponseEntity<List<PersonTimeDetailDto>> syncAll() {
+  public ResponseEntity<Integer> syncAll() {
     log.info("Ricevuta richiesta aggiornamento dei riepilogi di tutti gli uffici");
     val details = syncService.syncAll();
-    return ResponseEntity.ok().body(details.stream().map(mapper::convert).collect(Collectors.toList()));
+    return ResponseEntity.ok().body(details.size());
+  }
+
+  @DeleteMapping("/deleteAll")
+  public ResponseEntity<Void> deleteAll() {
+    syncService.deleteAllPersonTimeDetails();
+    log.debug("Eliminati tutti i dettagli dettagli del tempo a lavoro e assenze personale.");
+    return ResponseEntity.ok().build();
   }
 }

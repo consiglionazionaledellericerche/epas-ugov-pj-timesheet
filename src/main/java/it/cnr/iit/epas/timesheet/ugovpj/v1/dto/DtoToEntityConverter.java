@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -14,29 +14,30 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
 
-import java.time.LocalDate;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import org.springframework.stereotype.Component;
+
+import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Dto per esportare via REST le informazioni sulle righe di dettagli del tempo e assenze
- * di un dipendente.
+ * Classe di utilità per convertire un DTO nella corrispondente Entity.
  *
- * @author Cristian Lucchesi
  */
-@NoArgsConstructor
-@ToString
-@Data
-public class PersonTimeDetailDto {
+@RequiredArgsConstructor
+@Component
+public class DtoToEntityConverter {
 
-  private Long id;
-  private LocalDate date;
-  private String number;
-  private int minutes;
-  private int permanent = 0;
-  private String type;
+  private final PersonTimeDetailMapper mapper;
+
+  /**
+   * Crea una nuova Entity Result a partire dai dati del DTO.
+   */
+  public TimeDetailType createEntity(TimeDetailTypeDto dto) {
+    TimeDetailType type = new TimeDetailType();
+    mapper.update(type, dto);
+    return type;
+  }
 
 }

@@ -14,7 +14,7 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.controller.v1;
+package it.cnr.iit.epas.timesheet.ugovpj.v1;
 
 /**
  * Costanti utili per le definizioni delle rotte delle API.
@@ -32,5 +32,6 @@ public class ApiRoutes {
 
   public static final String LIST = "";
   public static final String SHOW = "/" + ID_REGEX;
+  public static final String CREATE = "";
 
 }
