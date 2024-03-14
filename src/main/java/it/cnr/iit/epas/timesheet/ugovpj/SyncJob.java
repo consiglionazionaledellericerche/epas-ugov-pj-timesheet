@@ -16,23 +16,29 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Job giornaliero di sincronizzazione dei dati di tutto il personale.
  *
  * @author Cristian Lucchesi
  */
-@EnableScheduling
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@Slf4j
+@RequiredArgsConstructor
+@Component
+public class SyncJob {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
+  private final SyncService syncService;
+
+  @Scheduled(cron = "0 30 05 ? * *")
+  void syncAllEveryDay() {
+    log.info("Sincronizzazione giornaliera via quartz avviata");
+    syncService.syncAll();
+    log.info("Sincronizzazione giornaliera via quartz terminata");
   }
-
 }
