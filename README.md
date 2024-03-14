@@ -32,6 +32,9 @@ delle informazioni tra ePAS e le tabelle Oracle di UGOV PJ UWeb Timesheet.
 
 L'endpoint da consultare è **/actuator/scheduledtasks**.
 
+**Il servizio effettua l'aggiornamento dei dati di presenze ed assenze di tutto il personale
+oggi mattina alle 05:30 AM.**
+
 ## Metriche del servizio
 
 Il servizio esporta alcune metriche in formato Prometheus, è possibile consultarle all'endpoint
