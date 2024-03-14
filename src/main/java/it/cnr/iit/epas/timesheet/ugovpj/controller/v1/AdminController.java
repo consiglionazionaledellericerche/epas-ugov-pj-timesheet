@@ -14,13 +14,13 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.controller;
+package it.cnr.iit.epas.timesheet.ugovpj.controller.v1;
 
 import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.OfficeDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonTimeDetailDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonTimeDetailMapper;
+import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailDto;
+import it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1.PersonTimeDetailMapper;
 import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@RequestMapping(ApiRoutes.BASE_PATH)
+@RequestMapping(ApiRoutes.BASE_PATH + "/admin")
 @RestController
 @RequiredArgsConstructor
 public class AdminController {

@@ -14,18 +14,20 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
 
 import java.time.LocalDate;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 /**
- * Dto per esportare via REST le informazioni sullle righe di dettagli del tempo e assenze
+ * Dto per esportare via REST le informazioni sulle righe di dettagli del tempo e assenze
  * di un dipendente.
  *
  * @author Cristian Lucchesi
  */
+@NoArgsConstructor
 @ToString
 @Data
 public class PersonTimeDetailDto {

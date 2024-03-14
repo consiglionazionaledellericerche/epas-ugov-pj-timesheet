@@ -19,7 +19,7 @@ package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 import lombok.Data;
 
 /**
- * Dati esportati in Json per la Persona.
+ * Dati esportati in Json da ePAS per la Persona.
  *
  * @author Cristian Lucchesi
  *

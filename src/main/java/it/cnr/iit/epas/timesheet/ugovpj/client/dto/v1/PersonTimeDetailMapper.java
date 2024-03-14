@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -14,23 +14,22 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.controller;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
+
+import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
+import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
+
+import org.mapstruct.Mapper;
 
 /**
- * Costanti utili per le definizioni delle rotte delle API.
- *
- * @author Cristian Lucchesi
+ * Mapping dei dati delle Entity nei rispettivi DTO.
  *
  */
-public class ApiRoutes {
+@Mapper(componentModel = "spring")
+public interface PersonTimeDetailMapper {
 
-  private static final String ONLY_DIGITS_REGEX = "^\\d+$";
+  PersonTimeDetailDto convert(PersonTimeDetail detail);
 
-  public static final String BASE_PATH = "/rest/v1";
-
-  public static final String ID_REGEX = "{id:" + ONLY_DIGITS_REGEX + "}";
-
-  public static final String LIST = "";
-  public static final String SHOW = "/" + ID_REGEX;
+  TimeDetailTypeDto convert(TimeDetailType type);
 
 }
