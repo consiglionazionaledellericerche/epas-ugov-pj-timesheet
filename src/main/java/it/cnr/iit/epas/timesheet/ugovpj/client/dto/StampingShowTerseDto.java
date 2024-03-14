@@ -21,8 +21,8 @@ import lombok.Data;
 import lombok.ToString;
 
 /**
- * DTO per l'esportazione via REST delle informazioni 
- * principali di una timbratura.
+ * DTO esportati via REST da ePAS con le informazioni principali di una
+ * timbratura.
  *
  * @author Cristian Lucchesi
  *

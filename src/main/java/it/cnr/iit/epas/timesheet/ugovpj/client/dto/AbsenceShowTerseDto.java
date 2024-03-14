@@ -22,8 +22,8 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * DTO per l'esportazione via REST delle informazioni 
- * principali di un'assenza.
+ * DTO per l'importazione via REST delle informazioni principali di un'assenza
+ * presenti in ePAS.
  *
  * @author Cristian Lucchesi
  *

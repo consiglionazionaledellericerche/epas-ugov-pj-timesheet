@@ -22,7 +22,7 @@ import lombok.Data;
 import lombok.ToString;
 
 /**
- * Dati esportati in Json per l'Ufficio.
+ * Dati esportati in Json da ePAS per l'Ufficio.
  *
  * @author Cristian Lucchesi
  *

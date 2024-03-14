@@ -14,27 +14,26 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
+package it.cnr.iit.epas.timesheet.ugovpj.client.dto.v1;
 
-import com.google.common.collect.Lists;
-import java.util.List;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
- * DTO con i dati esportati via REST da ePAS, contententni le informazioni
- * del riepilogo mensile assenze/presenze in un determinato mese.
+ * Dto per esportare via REST le tipologie di presenze/assenza presenti
+ * nella tabella di frontiera Oracle
  *
  * @author Cristian Lucchesi
- *
  */
+@NoArgsConstructor
+@ToString
 @Data
-public class PersonMonthRecapDto {
+public class TimeDetailTypeDto {
 
-  private Integer year;
-  private Integer month;
-  private PersonShowTerseDto person;
-  private int basedWorkingDays;
-
-  private List<PersonDayShowTerseDto> personDays = Lists.newArrayList();
-
+  private Long id;
+  private String code; 
+  private String description;
+  private String projectCode;
+  private String workUnitCode;
 }
