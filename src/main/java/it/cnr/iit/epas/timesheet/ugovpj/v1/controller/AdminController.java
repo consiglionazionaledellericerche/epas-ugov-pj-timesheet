@@ -87,8 +87,8 @@ public class AdminController {
 
   @DeleteMapping("/deleteAll")
   public ResponseEntity<Void> deleteAll() {
+    log.debug("Richiesta eliminazione di tutti i dettagli del tempo a lavoro e assenze personale");
     syncService.deleteAllPersonTimeDetails();
-    log.debug("Eliminati tutti i dettagli dettagli del tempo a lavoro e assenze personale.");
     return ResponseEntity.ok().build();
   }
 }

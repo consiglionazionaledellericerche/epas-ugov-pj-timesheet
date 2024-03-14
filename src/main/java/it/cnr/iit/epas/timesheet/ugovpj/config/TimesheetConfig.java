@@ -38,5 +38,6 @@ public class TimesheetConfig {
 
   private String stampingsType = "N";
   private int daysInThePast = 90;
+  private boolean deleteBeforeSyncAll = true;
 
 }

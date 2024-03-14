@@ -3,27 +3,29 @@
 
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-17-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
 
-*ePAS - UGov PJ UWeb Timesheet* è il servizio che permette di esportare le informazioni presenti in ePAS
-nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca denominato *UGov PJ UWeb Timesheet*.
-In particolare permette di esportare le informazioni sul tempo a lavoro e le assenze del personale presente in ePAS in una
-finestra di tempo configurabile.
-Queste informazioni su tempo a lavoro e assenze sono poi utilizzate dall'applicativo Cineca per guidare gli utenti nella
-compilazione dei timesheet tenendo in considerazione vincoli e suggerimenti che derivano da questi dati.
+*ePAS - UGov PJ UWeb Timesheet* è il servizio che permette di esportare le informazioni presenti in
+ePAS nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca
+denominato *UGov PJ UWeb Timesheet*.
+In particolare permette di esportare le informazioni sul tempo a lavoro e le assenze del personale
+presente in ePAS in una finestra di tempo configurabile.
+Queste informazioni su tempo a lavoro e assenze sono poi utilizzate dall'applicativo Cineca per
+guidare gli utenti nella compilazione dei timesheet tenendo in considerazione vincoli e
+suggerimenti che derivano da questi dati.
 
 ## Modalità di integrazione
 
-UGov PJ UWeb Timesheet prevede la possibilità di inserire in una tabella di frontiera *Oracle* le informazioni relative a 
-tempo a lavoro e assenze che vengono prelevate via REST da un server ePAS.
+UGov PJ UWeb Timesheet prevede la possibilità di inserire in una tabella di frontiera *Oracle* le
+informazioni relative a tempo a lavoro e assenze che vengono prelevate via REST da un server ePAS.
 
 ## Endpoint REST del servizio
 
-Questo servizio integra alcuni endpoint REST di amministrazione che permettono di lanciare su richiesta
-nuova richieste di sincronizzazione dei dati, oltre a vari task di amministrazione.
+Questo servizio integra alcuni endpoint REST di amministrazione che permettono di lanciare su
+richiesta nuove richieste di sincronizzazione dei dati, oltre a vari task di amministrazione.
 Gli endpoint REST sono protetti tramite Basic Auth, con utente e password configurato tramite
 le application.properties del servizio, oppure tramite le variabili d'ambiente 
 security.username,security.password nel caso di avvio tramite docker/docker-compose. 
 
-# Visualizzazione task schedulati
+## Visualizzazione task schedulati
 
 È possibile visualizzare le informazioni dei task cron schedulati per la sincronizzazone
 delle informazioni tra ePAS e le tabelle Oracle di UGOV PJ UWeb Timesheet.

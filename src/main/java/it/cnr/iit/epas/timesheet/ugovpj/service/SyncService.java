@@ -195,6 +195,9 @@ public class SyncService {
     long startTime = System.currentTimeMillis();
     log.info("Starting synchronization since {}", startingDate);
     YearMonth yearMonth = YearMonth.from(startingDate);
+    if (timesheetConfig.isDeleteBeforeSyncAll()) {
+      deleteAllPersonTimeDetails();
+    }
     while (!yearMonth.isAfter(YearMonth.from(LocalDate.now()))) {
       details.addAll(syncMonth(yearMonth, Optional.of(startingDate)));
       yearMonth = yearMonth.plusMonths(1);
@@ -208,6 +211,7 @@ public class SyncService {
 
   public void deleteAllPersonTimeDetails() {
     repo.deleteAll();
+    log.info("Cancellati tutti i resoconti di tempo a lavoro e assenze dei dipendenti");
   }
 
   private Set<String> timeDetailTypes() {
