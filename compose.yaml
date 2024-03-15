@@ -7,3 +7,5 @@ services:
       - 'APP_USER_PASSWORD=secret'
     ports:
       - '1521:1521'
+    labels:
+      org.springframework.boot.ignore: true
