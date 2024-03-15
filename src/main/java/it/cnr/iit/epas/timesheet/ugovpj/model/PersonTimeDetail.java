@@ -42,7 +42,7 @@ import lombok.ToString;
 @ToString
 @Data
 @Entity
-@Table(name = "ie_pj_marcature")
+@Table(name = "IE_PJ_MARCATURE")
 public class PersonTimeDetail {
 
   @Id
