@@ -29,10 +29,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import it.cnr.iit.epas.timesheet.ugovpj.repo.DetailLogRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.TimeDetailTypeRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.DetailLogDto;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.DtoToEntityConverter;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
@@ -43,6 +44,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Controller REST per la visualizzazione delle informazioni presenti
+ * nelle tabelle Oracle di frontiera.
+ *
+ */
 @Slf4j
 @RequestMapping(ApiRoutes.BASE_PATH + "/timesheet")
 @RestController
@@ -51,6 +57,7 @@ public class TimesheetController {
 
   private final TimeDetailTypeRepo timeDetailTypeRepo;
   private final PersonTimeDetailRepo personTimeDetailRepo;
+  private final DetailLogRepo detailLogRepo;
   private final PersonTimeDetailMapper mapper;
   private final DtoToEntityConverter dtoToEntityConverter;
   
@@ -87,4 +94,13 @@ public class TimesheetController {
     log.info("Creato Result {}", result);
     return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convert(result));
   }
+
+  @GetMapping("/logs")
+  public ResponseEntity<Page<DetailLogDto>> logs(
+      Pageable pageable) {
+    log.debug("Ricevuta richiesta visualizzazione log in tabella Oracle");
+    val details = detailLogRepo.findAll(pageable).map(mapper::convert);
+    return ResponseEntity.ok().body(details);
+  }
+
 }
