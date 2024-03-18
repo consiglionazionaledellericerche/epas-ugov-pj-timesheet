@@ -1,0 +1,39 @@
+version: "3.3"
+
+##############################################################################
+#                          ePAS HelpDesk Service                             #
+# Configurazione per l'avvio del servizio di integrazione tra ePAS ed        #
+# UGOV PJ UWeb Timesheet di Cineca                                           #
+#                                                                            #
+##############################################################################
+
+services:
+  epas-helpdesk-service:
+    image: ghcr.io/consiglionazionaledellericerche/epas-ugov-pj-timesheet:latest
+    container_name: epas-ugov-pj-timesheet
+    ports:
+      - 8080:8080
+    environment:
+      - spring.profiles.active=prod
+
+      # Impostazioni per autenticare le chiamate REST a questo servizio
+      - spring.security.username=${REST_USERNAME}
+      - spring.security.password=${REST_PASSWORD}
+
+      # Impostazione parametri per collegamento al db Oracle di Cineca
+      # l'accesso al database sarà molto probabilmente condizionato all'utilizzo di una VPN Cineca
+      - spring.datasource.url=${DB_URL}
+      - spring.datasource.username=${DB_USER}
+      - spring.datasource.password=${DB_PASS}
+      # Schema SQL di default
+      - spring.jpa.properties.hibernate.default_schema=${DB_SCHEMA}
+
+      # Informazioni per l'accesso di questo servizio ai servizi REST di ePAS
+      - spring.epas.server-url=${EPAS_URL}
+      - spring.epas.username=${EPAS_USERNAME}
+      - spring.epas.password=${EPAS_PASSWORD}
+
+      # Configurazioni specifiche del sistema di sincronizzazione
+      - spring.timesheet.stampings-type=N
+      - spring.timesheet.days-in-the-past=90
+      - spring.timesheet.delete-before-sync-all=true
