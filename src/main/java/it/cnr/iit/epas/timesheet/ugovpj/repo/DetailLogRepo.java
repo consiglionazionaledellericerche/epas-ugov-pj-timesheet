@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -14,29 +14,16 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
+package it.cnr.iit.epas.timesheet.ugovpj.repo;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
 import it.cnr.iit.epas.timesheet.ugovpj.model.DetailLog;
-import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
-import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Mapping dei dati delle Entity nei rispettivi DTO.
+ * Repository per l'accesso ai log su tabella del passaggio dei dati.
  *
  * @author Cristian Lucchesi
- *
  */
-@Mapper(componentModel = "spring")
-public interface PersonTimeDetailMapper {
-
-  PersonTimeDetailDto convert(PersonTimeDetail detail);
-
-  TimeDetailTypeDto convert(TimeDetailType type);
-
-  DetailLogDto convert(DetailLog log);
-
-  void update(@MappingTarget TimeDetailType type, TimeDetailTypeDto dto);
-
+public interface DetailLogRepo extends JpaRepository<DetailLog,Long> {
+  //Empty interface
 }

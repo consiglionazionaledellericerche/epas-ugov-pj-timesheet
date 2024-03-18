@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -16,27 +16,24 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import it.cnr.iit.epas.timesheet.ugovpj.model.DetailLog;
-import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
-import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
+import java.time.LocalDate;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
- * Mapping dei dati delle Entity nei rispettivi DTO.
+ * Dto per esportare via REST i log presenti nella tabella di frontiera Oracle.
  *
  * @author Cristian Lucchesi
- *
  */
-@Mapper(componentModel = "spring")
-public interface PersonTimeDetailMapper {
+@NoArgsConstructor
+@ToString
+@Data
+public class DetailLogDto {
 
-  PersonTimeDetailDto convert(PersonTimeDetail detail);
-
-  TimeDetailTypeDto convert(TimeDetailType type);
-
-  DetailLogDto convert(DetailLog log);
-
-  void update(@MappingTarget TimeDetailType type, TimeDetailTypeDto dto);
+  private Long id;
+  private LocalDate date;
+  private String outcome;
+  private Long numberOfDetails;
 
 }
