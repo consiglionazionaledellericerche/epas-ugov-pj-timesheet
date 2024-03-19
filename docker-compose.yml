@@ -1,11 +1,11 @@
 version: "3.3"
 
-##############################################################################
-#                          ePAS HelpDesk Service                             #
-# Configurazione per l'avvio del servizio di integrazione tra ePAS ed        #
-# UGOV PJ UWeb Timesheet di Cineca                                           #
-#                                                                            #
-##############################################################################
+#################################################################################
+#                          ePAS UGov PJ Timesheet                               #
+# Configurazione per l'avvio del servizio di integrazione tra ePAS ed           #
+# UGOV PJ UWeb Timesheet di Cineca                                              #
+#                                                                               #
+#################################################################################
 
 services:
   epas-helpdesk-service:
@@ -21,7 +21,8 @@ services:
       - spring.security.password=${REST_PASSWORD}
 
       # Impostazione parametri per collegamento al db Oracle di Cineca
-      # l'accesso al database sarà molto probabilmente condizionato all'utilizzo di una VPN Cineca
+      # l'accesso al database sarà molto probabilmente condizionato all'utilizzo
+      # di una VPN Cineca
       - spring.datasource.url=${DB_URL}
       - spring.datasource.username=${DB_USER}
       - spring.datasource.password=${DB_PASS}
@@ -34,6 +35,6 @@ services:
       - spring.epas.password=${EPAS_PASSWORD}
 
       # Configurazioni specifiche del sistema di sincronizzazione
-      - spring.timesheet.stampings-type=N
-      - spring.timesheet.days-in-the-past=90
-      - spring.timesheet.delete-before-sync-all=true
+      - spring.timesheet.stampings-type=${STAMPINGS_TYPE_CODE:-N}
+      - spring.timesheet.days-in-the-past=${DAYS_IN_THE_PAST:-90}
+      - spring.timesheet.delete-before-sync-all=${DELETE_BEFORE_SYNC_ALL:-true}
