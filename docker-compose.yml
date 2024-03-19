@@ -16,10 +16,6 @@ services:
     environment:
       - spring.profiles.active=prod
 
-      # Impostazioni per autenticare le chiamate REST a questo servizio
-      - spring.security.username=${REST_USERNAME}
-      - spring.security.password=${REST_PASSWORD}
-
       # Impostazione parametri per collegamento al db Oracle di Cineca
       # l'accesso al database sarà molto probabilmente condizionato all'utilizzo
       # di una VPN Cineca
@@ -29,14 +25,18 @@ services:
       # Schema SQL di default
       - spring.jpa.properties.hibernate.default_schema=${DB_SCHEMA}
 
+      # Impostazioni per autenticare le chiamate REST a questo servizio
+      - security.username=${REST_USERNAME}
+      - security.password=${REST_PASSWORD}
+
       # Informazioni per l'accesso di questo servizio ai servizi REST di ePAS
-      - spring.epas.server-url=${EPAS_URL}
-      - spring.epas.username=${EPAS_USERNAME}
-      - spring.epas.password=${EPAS_PASSWORD}
+      - epas.server-url=${EPAS_URL}
+      - epas.username=${EPAS_USERNAME}
+      - epas.password=${EPAS_PASSWORD}
 
       # Configurazioni specifiche del sistema di sincronizzazione
-      - spring.timesheet.stampings-type=${STAMPINGS_TYPE_CODE:-N}
-      - spring.timesheet.days-in-the-past=${DAYS_IN_THE_PAST:-90}
-      - spring.timesheet.delete-before-sync-all=${DELETE_BEFORE_SYNC_ALL:-true}
+      - timesheet.stampings-type=${STAMPINGS_TYPE_CODE:-N}
+      - timesheet.days-in-the-past=${DAYS_IN_THE_PAST:-90}
+      - timesheet.delete-before-sync-all=${DELETE_BEFORE_SYNC_ALL:-true}
+
     restart: unless-stopped
-    

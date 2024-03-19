@@ -51,6 +51,18 @@ standard docker-compose:
 docker-compose up -d
 ```
 
+## Utilizzo della VPN Cisco su Linux
+
+Utilizzando su Ubuntu il client VPN Cisco Anyconnect ci possono essere dei problemi di routing
+che non permettono al container docker di raggiungere gli host del database Oracle tramite la VPN.
+Per lo sviluppo di questo servizio è stato utilizzato su Ubuntu il client VPN **openconnect**.
+
+```
+sudo apt install openconnect network-manager-openconnect network-manager-openconnect-gnome
+```
+
+e configurando la VPN tramite VPN Settings -> Multi-protocol VPN client (open connect).
+
 ## Endpoint REST del servizio
 
 Questo servizio integra alcuni endpoint REST di amministrazione che permettono di lanciare su
