@@ -37,7 +37,7 @@ public class CachingService {
     cacheManager.getCacheNames().stream()
       .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
   }
-  
+
   @Scheduled(fixedRateString = "${caching.spring.timeDetailTypes}")
   public void evictAllcachesAtIntervals() {
       evictAllCaches();
