@@ -4,26 +4,60 @@
 [![Supported JVM Versions](https://img.shields.io/badge/JVM-17-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
 
 *ePAS - UGov PJ UWeb Timesheet* è il servizio che permette di esportare le informazioni presenti in
-ePAS nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca
-denominato *UGov PJ UWeb Timesheet*.
+[ePAS](https://epas.projects.iit.cnr.it) nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca denominato *UGov PJ UWeb Timesheet Intime*.
+
 In particolare permette di esportare le informazioni sul tempo a lavoro e le assenze del personale
 presente in ePAS in una finestra di tempo configurabile.
 Queste informazioni su tempo a lavoro e assenze sono poi utilizzate dall'applicativo Cineca per
 guidare gli utenti nella compilazione dei timesheet tenendo in considerazione vincoli e
 suggerimenti che derivano da questi dati.
 
+Il software è distribuito come immagine [Docker](https://docker.com) 
+configurata per accedere a scadenza regolare via REST alle informazioni di ePAS ed inserirle
+nelle tabelle di frontiera Oracle di UGov Pj UWeb Timesheet Intime.
+
 ## Modalità di integrazione
 
 UGov PJ UWeb Timesheet prevede la possibilità di inserire in una tabella di frontiera *Oracle* le
 informazioni relative a tempo a lavoro e assenze che vengono prelevate via REST da un server ePAS.
 
+## Configurazione e avvio del servizio tramite docker/docker-compose
+
+ePAS UGov Pj Timesheet può essere facilmente installato via docker-compose su server Linux
+utilizzando il file docker-compose.yml ed il .env presenti in questo repository.
+
+Per l'accesso al database Oracle è necessario richiedere le informazioni di accesso a Cineca.
+In particolare è necessario avere il **TNS Oracle**, il nome dello schema SQL, username 
+e password per l'accesso al db. 
+Inoltre Cineca tipicamente fornisce l'accesso al database Oracle solo tramite VPN, di cui
+eventualmente fare richiesta a Cineca.
+
+Accertati di aver installato docker e docker-compose dove vuoi installare *ePAS UGov Pj Timesheet*
+ed in seguito scarica il [docker-compose.yml](docker-compose.yml) ed il [.env](.env) di esempio.
+
+```
+curl --remote-name-all https://raw.githubusercontent.com/consiglionazionaledellericerche/epas-ugov-pj-timesheet/main/{compose.yaml,VERSION}
+```
+
+Tipicamente non è necessario modificare il docker-compose.yml, mentre è obbligatorio
+inserire nel [.env](.env) i parametri per la connessione al db Oracle e per l'accesso all'API REST
+di ePAS. 
+Per la configurazione del file [.env](.env) è possibile seguire i commenti già presenti.
+
+Una volta configurati i parametri del [.env](.env) è possibile avviare il servizio nella modalità
+standard docker-compose:
+
+```
+docker-compose up -d
+```
+
 ## Endpoint REST del servizio
 
 Questo servizio integra alcuni endpoint REST di amministrazione che permettono di lanciare su
-richiesta nuove richieste di sincronizzazione dei dati, oltre a vari task di amministrazione.
+richiesta nuove sincronizzazioni dei dati, oltre a vari task di amministrazione.
 Gli endpoint REST sono protetti tramite Basic Auth, con utente e password configurato tramite
 le application.properties del servizio, oppure tramite le variabili d'ambiente 
-security.username,security.password nel caso di avvio tramite docker/docker-compose. 
+*spring.security.username*, *spring.security.password* nel caso di avvio tramite docker/docker-compose.
 
 ## Visualizzazione task schedulati
 
@@ -32,8 +66,7 @@ delle informazioni tra ePAS e le tabelle Oracle di UGOV PJ UWeb Timesheet.
 
 L'endpoint da consultare è **/actuator/scheduledtasks**.
 
-**Il servizio effettua l'aggiornamento dei dati di presenze ed assenze di tutto il personale
-oggi mattina alle 05:30 AM.**
+**Il servizio effettua l'aggiornamento dei dati di presenze ed assenze di tutto il personale oggi mattina alle 05:30 AM.**
 
 ## Metriche del servizio
 

@@ -38,3 +38,5 @@ services:
       - spring.timesheet.stampings-type=${STAMPINGS_TYPE_CODE:-N}
       - spring.timesheet.days-in-the-past=${DAYS_IN_THE_PAST:-90}
       - spring.timesheet.delete-before-sync-all=${DELETE_BEFORE_SYNC_ALL:-true}
+    restart: unless-stopped
+    
