@@ -20,8 +20,6 @@ import java.time.LocalDate;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
@@ -46,7 +44,6 @@ import lombok.ToString;
 public class PersonTimeDetail {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "ID_IE_PJ_MARCATURE")
   private Long id;
 
@@ -61,10 +58,10 @@ public class PersonTimeDetail {
   @NotNull
   @Column(name = "MARCATURA")
   private int minutes;
-  
+
   @Builder.Default
   @Column(name = "FL_CONSOLIDATA")
-  private int permanent = 0;
+  private int permanent = 1;
 
   @NotNull
   @Column(name = "TIPO_MARCATURA")

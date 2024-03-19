@@ -14,29 +14,33 @@
  *     You should have received a copy of the GNU Affero General Public License
  *     along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package it.cnr.iit.epas.timesheet.ugovpj;
+package it.cnr.iit.epas.timesheet.ugovpj.service;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.cache.CacheManager;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
-import io.hypersistence.utils.spring.repository.BaseJpaRepositoryImpl;
+import lombok.RequiredArgsConstructor;
 
 /**
- * Classe per l'avvio dell'applicazione Spring Boot.
+ * Contiene i metodi di supporto per ripulire le cache.
  *
  * @author Cristian Lucchesi
  */
-@EnableJpaRepositories(repositoryBaseClass = BaseJpaRepositoryImpl.class)
-@EnableScheduling
-@EnableFeignClients
-@SpringBootApplication
-public class UgovPjApplication {
+@RequiredArgsConstructor
+@Service
+public class CachingService {
 
-  public static void main(String[] args) {
-    SpringApplication.run(UgovPjApplication.class, args);
+  private final CacheManager cacheManager;
+
+  public void evictAllCaches() {
+    cacheManager.getCacheNames().stream()
+      .forEach(cacheName -> cacheManager.getCache(cacheName).clear());
+  }
+  
+  @Scheduled(fixedRateString = "${caching.spring.timeDetailTypes}")
+  public void evictAllcachesAtIntervals() {
+      evictAllCaches();
   }
 
 }

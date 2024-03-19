@@ -19,16 +19,32 @@ package it.cnr.iit.epas.timesheet.ugovpj.repo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 
+import io.hypersistence.utils.spring.repository.BaseJpaRepository;
 import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
+import jakarta.transaction.Transactional;
 
 /**
  * Repository per l'accesso e la gestione dei dati del PersonTimeDetail.
  *
  * @author Cristian Lucchesi
  */
-public interface PersonTimeDetailRepo extends JpaRepository<PersonTimeDetail,Long> {
+public interface PersonTimeDetailRepo 
+  extends JpaRepository<PersonTimeDetail,Long>, BaseJpaRepository<PersonTimeDetail, Long> {
 
   Page<PersonTimeDetail> findByNumber(String number, Pageable pageable);
 
+  @Transactional
+  @Modifying
+  @Query(value = "DELETE FROM PersonTimeDetail ptd")
+  void truncateTable();
+
+  @Procedure(procedureName = "IE_PJ.P_CARICA_MARCATURE")
+  int loadDetails();
+
+  @Procedure(procedureName = "IE_PJ.P_CARICA_MARCATURE_JOB")
+  int loadDetailsJob();
 }
