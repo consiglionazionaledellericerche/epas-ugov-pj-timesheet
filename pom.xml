@@ -179,7 +179,7 @@
 					<from><image>eclipse-temurin:17-jre@sha256:d9b347bd2bf6b849cfa2dbe8f1f32017217d086dec0a64a0746cd79be8a397c9</image></from>
 					<container>
 						<creationTime>USE_CURRENT_TIMESTAMP</creationTime>
-						<mainClass>it.cnr.iit.epas.timesheet.ugovpj.UgoPjApplication</mainClass>
+						<mainClass>it.cnr.iit.epas.timesheet.ugovpj.UgovPjApplication</mainClass>
 					</container>
 				</configuration>
 			</plugin>
