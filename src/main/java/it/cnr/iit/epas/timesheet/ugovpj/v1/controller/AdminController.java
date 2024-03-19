@@ -19,6 +19,7 @@ package it.cnr.iit.epas.timesheet.ugovpj.v1.controller;
 import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.OfficeDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
+import it.cnr.iit.epas.timesheet.ugovpj.service.CachingService;
 import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
@@ -41,6 +42,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controller REST con varie operazioni di amministrazione.
+ *
+ * @author Cristian Lucchesi
+ */
 @Slf4j
 @RequestMapping(ApiRoutes.BASE_PATH + "/admin")
 @RestController
@@ -49,6 +55,7 @@ public class AdminController {
 
   private final EpasClient epasClient;
   private final SyncService syncService;
+  private final CachingService cachingService;
   private final PersonTimeDetailMapper mapper;
 
   @GetMapping("/offices")
@@ -89,6 +96,20 @@ public class AdminController {
   public ResponseEntity<Void> deleteAll() {
     log.debug("Richiesta eliminazione di tutti i dettagli del tempo a lavoro e assenze personale");
     syncService.deleteAllPersonTimeDetails();
+    return ResponseEntity.ok().build();
+  }
+
+  @PostMapping("/loadDetails")
+  public ResponseEntity<Void> loadDetails() {
+    log.debug("Richiesta caricamento definitivo dati tramite stored procedure");
+    syncService.loadDetails();
+    return ResponseEntity.ok().build();
+  }
+
+  @DeleteMapping("/evictCaches")
+  public ResponseEntity<Void> evictCaches() {
+    log.debug("Richiesta evict di tutte le cache");
+    cachingService.evictAllCaches();
     return ResponseEntity.ok().build();
   }
 }

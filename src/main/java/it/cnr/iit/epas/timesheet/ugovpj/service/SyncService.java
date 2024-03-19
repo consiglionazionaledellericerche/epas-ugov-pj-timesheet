@@ -21,8 +21,6 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -40,9 +38,7 @@ import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonShowTerseDto;
 import it.cnr.iit.epas.timesheet.ugovpj.config.TimesheetConfig;
 import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
-import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
-import it.cnr.iit.epas.timesheet.ugovpj.repo.TimeDetailTypeRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
@@ -53,18 +49,23 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author Cristian Lucchesi
  */
+/**
+ * 
+ */
 @Slf4j
 @RequiredArgsConstructor
 @Service
 public class SyncService {
 
   private final PersonTimeDetailRepo repo;
-  private final TimeDetailTypeRepo typeRepo;
-  
+  private final TimeDetailTypeService typeService;
+
   private final EpasClient epasClient;
   private final TimesheetConfig timesheetConfig;
 
   private final MeterRegistry meterRegistry;
+
+  private final Long ID_OFFSET = 100000000L;
 
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
@@ -78,11 +79,13 @@ public class SyncService {
     }
     val personTimeDetail = 
         PersonTimeDetail.builder()
+          .id(personDay.getId())
           .date(personDay.getDate()).minutes(personDay.getTimeAtWork())
           .number(person.getNumber())
           .type(timesheetConfig.getStampingsType())
           .build();
-    repo.save(personTimeDetail);
+    repo.persistAndFlush(personTimeDetail);
+    log.debug("Salvato tempo al lavoro personTimeDetail {}", personTimeDetail);
     return Optional.of(personTimeDetail);
   }
 
@@ -91,7 +94,7 @@ public class SyncService {
    */
   private List<PersonTimeDetail> syncPersonDayAbsences(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
     Map<String, Integer> absenceMap = Maps.newHashMap();
-    val timeDetailType = timeDetailTypes();
+    val timeDetailType = typeService.timeDetailTypes();
     personDay.getAbsences().stream()
     .filter(absence -> timeDetailType.contains(absence.getExternalTypeId()))
     .forEach(absence -> {
@@ -107,11 +110,14 @@ public class SyncService {
       //Inserimento resoconto tempo giustificato per l'assenza
       val personTimeDetail = 
           PersonTimeDetail.builder()
-            .date(personDay.getDate()).minutes(absenceMap.get(absenceGroup))
+            .id(personTimeDetailId(personDay, absenceGroup))
+            .date(personDay.getDate())
+            .minutes(absenceMap.get(absenceGroup))
             .number(person.getNumber())
             .type(absenceGroup)
             .build();
-      repo.save(personTimeDetail);
+      repo.persistAndFlush(personTimeDetail);
+      log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
       details.add(personTimeDetail);
     });
     return details;
@@ -210,11 +216,26 @@ public class SyncService {
   }
 
   public void deleteAllPersonTimeDetails() {
-    repo.deleteAll();
+    repo.truncateTable();
     log.info("Cancellati tutti i resoconti di tempo a lavoro e assenze dei dipendenti");
   }
 
-  private Set<String> timeDetailTypes() {
-    return typeRepo.findAll().stream().map(TimeDetailType::getCode).collect(Collectors.toSet());
+  /**
+   * Invoca le stored procedure per il caricamento dei dati delle marcature
+   * nella tabella definitiva.
+   */
+  public void loadDetails() {
+    repo.loadDetails();
+    repo.loadDetailsJob();
   }
+
+  /**
+   * Genera un ID univoco per le righe di marcatura di un dipendente di un
+   * giorno. Per ogni absenceGroup viene generato un ID basato sul suo hashcode
+   * a cui viene sommato un offset.
+   */
+  public Long personTimeDetailId(PersonDayShowTerseDto personDay, String absenceGroup) {
+    return personDay.getId() + ID_OFFSET + absenceGroup.hashCode();
+  }
+
 }
