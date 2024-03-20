@@ -33,9 +33,9 @@ UGov Pj Timesheet prevede di raggruppare le assenze in alcune tipologie, per ese
 
 è necessario definire una correlazione tra questi codici ed i codici si assenza presenti in ePAS,
 per questo motivo in ePAS è stata aggiunta la possibilità per ogni codice di assenza di specificare
-un campo **externalTypeId**, questo campo deve essere valorizzata per i tipi di assenza che si vogliono
+un campo **External Id**, questo campo deve essere valorizzata per i tipi di assenza che si vogliono
 esportare verso il sistema Cineca con il rispettivo codice Cineca.
-Per esempio i codici CNR *32*, *31*, *94* dovranno aver valorizzato il codice Cineca *F*.
+Per esempio i codici ePAS *32*, *31*, *94* dovranno aver valorizzato il campo *External Id* con il valore *F*.
  
 ## Configurazione e avvio del servizio tramite docker/docker-compose
 
