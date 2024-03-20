@@ -16,16 +16,16 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.v1.controller;
 
-import it.cnr.iit.epas.timesheet.ugovpj.client.EpasClient;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.OfficeDto;
-import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import it.cnr.iit.epas.timesheet.ugovpj.service.CachingService;
 import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
-
-import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
@@ -33,10 +33,8 @@ import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,36 +45,85 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * @author Cristian Lucchesi
  */
+@Tag(
+    name = "Admin Controller", 
+    description = "Avvio delle operazioni di sincronizzazione e altre funzioni di amministrazione del servizio")
 @Slf4j
 @RequestMapping(ApiRoutes.BASE_PATH + "/admin")
 @RestController
 @RequiredArgsConstructor
 public class AdminController {
 
-  private final EpasClient epasClient;
   private final SyncService syncService;
   private final CachingService cachingService;
   private final PersonTimeDetailMapper mapper;
 
-  @GetMapping("/offices")
-  public ResponseEntity<List<OfficeDto>> offices(
-      @RequestParam("atDate")
-      @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-      Optional<LocalDate> atDate) {
-    log.debug("Ricevuta richiesta estrazione lista di uffici da ePAS alla data {}", atDate.orElse(LocalDate.now()));
-    val offices = epasClient.getActiveOffices(atDate.orElse(LocalDate.now()));
-    return ResponseEntity.ok().body(offices);
+  @Operation(
+      summary = "Avvio della sincronizzazione dei dati di tutti gli uffici.",
+      description = "La sincronizzazione non svuota la tabella IE_PJ_MARCATURE, eventualmente svuotarla con l'apposito"
+          + "endpoint REST. Il periodo dipende dalla configurazione.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Dati sincronizzati e restituito il numero di riepiloghi inseriti")
+  })
+  @PostMapping("/syncAll")
+  public ResponseEntity<Integer> syncAll() {
+    log.info("Ricevuta richiesta aggiornamento dei riepilogi di tutti gli uffici");
+    val details = syncService.syncAll();
+    return ResponseEntity.ok().body(details.size());
   }
 
-  @GetMapping("/officeMonthRecap")
-  public ResponseEntity<List<PersonMonthRecapDto>> officeMonthRecap(
-      @RequestParam("officeId") Long officeId, @RequestParam("year") int year, @RequestParam("month") int month) {
-    log.debug("Ricevuta richiesta visualizzazione riepilogo mensile per ufficio id={} {}/{}", 
-        officeId, month, year);
-    val monthRecap = epasClient.getMonthRecap(officeId, year, month);
-    return ResponseEntity.ok().body(monthRecap);
+  @Operation(
+      summary = "Cancellata tutti i dati delle presenze/assenza, svuotando la tabella IE_PJ_MARCATURE.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Dati cancellati correttamente")
+  })
+  @DeleteMapping("/deleteAll")
+  public ResponseEntity<Void> deleteAll() {
+    log.debug("Richiesta eliminazione di tutti i dettagli del tempo a lavoro e assenze personale");
+    syncService.deleteAllPersonTimeDetails();
+    return ResponseEntity.ok().build();
   }
 
+  @Operation(
+      summary = "Effettua il caricamento definitivo dei dati delle presenze/assenza, invocando le apposite "
+          + "stored procedures.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Stored procedure di caricamento definitivo dei dati invocate correttamente")
+  })
+  @PostMapping("/loadDetails")
+  public ResponseEntity<Void> loadDetails() {
+    log.debug("Richiesta caricamento definitivo dati tramite stored procedure");
+    syncService.loadDetails();
+    return ResponseEntity.ok().build();
+  }
+
+  @Operation(
+      summary = "Effettua il caricamento definitivo dei dati delle presenze/assenza, invocando le apposite "
+          + "stored procedures (in modo SQL nativo, senza utilizzare Spring Data).")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Stored procedure di caricamento definitivo dei dati invocate correttamente")
+  })
+  @PostMapping("/loadDetailsNative")
+  public ResponseEntity<Void> loadDetailsNative() {
+    log.debug("Richiesta caricamento definitivo dati tramite stored procedure (native)");
+    syncService.loadDetailsNative();
+    return ResponseEntity.ok().build();
+  }
+
+  @Operation(
+      summary = "Effettua la sincronizzazione dei dati di presenza/assenza di un singolo ufficio "
+          + "in un singolo mese.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Inseriti i dati di presenze/assenza e mostrato il dettaglio dei dati inseriti"),
+      @ApiResponse(responseCode = "400", 
+          description = "Non passato uno dei tre parametri obbligatori: officeId, year, month.",
+          content = @Content)
+  })
   @PostMapping("/officeMonthRecap")
   public ResponseEntity<List<PersonTimeDetailDto>> syncOfficeMonthRecap(
       @RequestParam("officeId") Long officeId, @RequestParam("year") int year, @RequestParam("month") int month) {
@@ -85,31 +132,17 @@ public class AdminController {
     return ResponseEntity.ok().body(details.stream().map(mapper::convert).collect(Collectors.toList()));
   }
 
-  @PostMapping("/syncAll")
-  public ResponseEntity<Integer> syncAll() {
-    log.info("Ricevuta richiesta aggiornamento dei riepilogi di tutti gli uffici");
-    val details = syncService.syncAll();
-    return ResponseEntity.ok().body(details.size());
-  }
-
-  @DeleteMapping("/deleteAll")
-  public ResponseEntity<Void> deleteAll() {
-    log.debug("Richiesta eliminazione di tutti i dettagli del tempo a lavoro e assenze personale");
-    syncService.deleteAllPersonTimeDetails();
-    return ResponseEntity.ok().build();
-  }
-
-  @PostMapping("/loadDetails")
-  public ResponseEntity<Void> loadDetails() {
-    log.debug("Richiesta caricamento definitivo dati tramite stored procedure");
-    syncService.loadDetails();
-    return ResponseEntity.ok().build();
-  }
-
+  @Operation(
+      summary = "Svuota le cache utilizzate, in particolare quella dei tipi di marcatura.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Cache svuotata correttamente")
+  })
   @DeleteMapping("/evictCaches")
   public ResponseEntity<Void> evictCaches() {
     log.debug("Richiesta evict di tutte le cache");
     cachingService.evictAllCaches();
     return ResponseEntity.ok().build();
   }
+
 }
