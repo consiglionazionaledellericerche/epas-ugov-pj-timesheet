@@ -49,9 +49,6 @@ import lombok.extern.slf4j.Slf4j;
  *
  * @author Cristian Lucchesi
  */
-/**
- * 
- */
 @Slf4j
 @RequiredArgsConstructor
 @Service
@@ -227,6 +224,15 @@ public class SyncService {
   public void loadDetails() {
     repo.loadDetails();
     repo.loadDetailsJob();
+  }
+
+  /**
+   * Invoca le stored procedure per il caricamento dei dati delle marcature
+   * nella tabella definitiva utilizzando native query.
+   */
+  public void loadDetailsNative() {
+    repo.loadDetailsNative();
+    repo.loadDetailsJobNative();
   }
 
   /**

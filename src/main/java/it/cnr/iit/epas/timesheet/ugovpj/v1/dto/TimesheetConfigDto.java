@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -16,30 +16,22 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.v1.dto;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.MappingTarget;
-import it.cnr.iit.epas.timesheet.ugovpj.config.TimesheetConfig;
-import it.cnr.iit.epas.timesheet.ugovpj.model.DetailLog;
-import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
-import it.cnr.iit.epas.timesheet.ugovpj.model.TimeDetailType;
+import lombok.Data;
+import lombok.ToString;
 
 /**
- * Mapping dei dati delle Entity nei rispettivi DTO.
+ * DTO per mostrare i parametri di configurazione per l'integrazione dei dati
+ * tra ePAS e UGov-PJ-Timesheet.
  *
  * @author Cristian Lucchesi
  *
  */
-@Mapper(componentModel = "spring")
-public interface PersonTimeDetailMapper {
+@Data
+@ToString
+public class TimesheetConfigDto {
 
-  PersonTimeDetailDto convert(PersonTimeDetail detail);
-
-  TimeDetailTypeDto convert(TimeDetailType type);
-
-  DetailLogDto convert(DetailLog log);
-
-  TimesheetConfigDto convert(TimesheetConfig config);
-
-  void update(@MappingTarget TimeDetailType type, TimeDetailTypeDto dto);
+  private String stampingsType = "N";
+  private int daysInThePast = 90;
+  private boolean deleteBeforeSyncAll = true;
 
 }

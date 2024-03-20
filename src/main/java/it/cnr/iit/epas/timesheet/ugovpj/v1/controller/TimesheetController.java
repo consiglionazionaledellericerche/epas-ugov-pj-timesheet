@@ -29,6 +29,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import it.cnr.iit.epas.timesheet.ugovpj.config.TimesheetConfig;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.DetailLogRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.TimeDetailTypeRepo;
@@ -38,6 +44,7 @@ import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.DtoToEntityConverter;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.TimeDetailTypeDto;
+import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.TimesheetConfigDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +56,9 @@ import lombok.extern.slf4j.Slf4j;
  * nelle tabelle Oracle di frontiera.
  *
  */
+@Tag(
+    name = "Timesheet Controller", 
+    description = "Visualizzazione delle informazioni presenti nelle tabelle di frontiera (marcature, tipi, logs)")
 @Slf4j
 @RequestMapping(ApiRoutes.BASE_PATH + "/timesheet")
 @RestController
@@ -60,7 +70,14 @@ public class TimesheetController {
   private final DetailLogRepo detailLogRepo;
   private final PersonTimeDetailMapper mapper;
   private final DtoToEntityConverter dtoToEntityConverter;
-  
+  private final TimesheetConfig timesheetConfig;
+
+  @Operation(
+      summary = "Visualizzazione dei tipi di marcatura presenti nella tabella IE_PJ_MARCATURE_TIPI.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituiti i tipi di marcatura.")
+  })
   @GetMapping("/timeDetailTypes")
   public ResponseEntity<List<TimeDetailTypeDto>> timeDetailTypes() {
     log.debug("Ricevuta richiesta estrazione lista dei tipi di presenza/assenza");
@@ -69,14 +86,33 @@ public class TimesheetController {
         types.stream().map(mapper::convert).collect(Collectors.toList()));
   }
 
+  @Operation(
+      summary = "Visualizzazione delle informazioni di presenza/assenza di una persona, invididuata "
+          + "tramite la sua matricola.",
+      description = "Le informazioni sono estratte dalla tabella IE_PJ_MARCATURE ed i risultati sono paginati.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituite le presenze/assenze della persona."),
+      @ApiResponse(responseCode = "400", 
+          description = "Numero di matricola non passato.",
+          content = @Content)
+  })
   @GetMapping("/personTimeDetails")
   public ResponseEntity<Page<PersonTimeDetailDto>> personTimeDetails(
-      @NotNull @RequestParam("number") String number, Pageable pageable) {
+      @NotNull @RequestParam("number") String number, 
+      Pageable pageable) {
     log.debug("Ricevuta richiesta presenze/assenze persona matricola = {}", number);
     val details = personTimeDetailRepo.findByNumber(number, pageable).map(mapper::convert);
     return ResponseEntity.ok().body(details);
   }
 
+  @Operation(
+      summary = "Visualizzazione delle informazioni di presenza/assenza di tutte le persona",
+      description = "Le informazioni sono estratte dalla tabella IE_PJ_MARCATURE ed i risultati sono paginati.")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituite le presenze/assenze presenti di tutte le persone.")
+  })
   @GetMapping("/timeDetails")
   public ResponseEntity<Page<PersonTimeDetailDto>> timeDetails(
       Pageable pageable) {
@@ -95,12 +131,31 @@ public class TimesheetController {
     return ResponseEntity.status(HttpStatus.CREATED).body(mapper.convert(result));
   }
 
+  @Operation(
+      summary = "Visualizzazione dei log delle procedure di carico di tutte le presenze/assenze",
+      description = "I risultati mostrati sono quelli della tabella IE_PJ_MARCATURE_LOGS")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituiti i log presenti.")
+  })
   @GetMapping("/logs")
   public ResponseEntity<Page<DetailLogDto>> logs(
       Pageable pageable) {
     log.debug("Ricevuta richiesta visualizzazione log in tabella Oracle");
     val details = detailLogRepo.findAll(pageable).map(mapper::convert);
     return ResponseEntity.ok().body(details);
+  }
+
+  @Operation(
+      summary = "Visualizzazione dei parametri relativi alla sincronizzazione dei dati")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituiti i parametri presenti.")
+  })
+  @GetMapping("/config")
+  public ResponseEntity<TimesheetConfigDto> config() {
+    log.debug("Ricevuta richiesta visualizzazione configurazione parametri timesheet");
+    return ResponseEntity.ok().body(mapper.convert(timesheetConfig));
   }
 
 }

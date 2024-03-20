@@ -18,6 +18,8 @@
 		<spring-cloud.version>2023.0.0</spring-cloud.version>
 		<org.mapstruct.version>1.5.5.Final</org.mapstruct.version>
 		<jib.maven-plugin.version>3.4.0</jib.maven-plugin.version>
+		<springdoc-openapi.version>2.4.0</springdoc-openapi.version>
+		<hypersistence-utils.version>3.7.3</hypersistence-utils.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -51,7 +53,12 @@
 		<dependency>
 			<groupId>io.hypersistence</groupId>
 			<artifactId>hypersistence-utils-hibernate-63</artifactId>
-			<version>3.7.3</version>
+			<version>${hypersistence-utils.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc-openapi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate.validator</groupId>

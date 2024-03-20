@@ -21,6 +21,22 @@ nelle tabelle di frontiera Oracle di UGov Pj UWeb Timesheet Intime.
 UGov PJ UWeb Timesheet prevede la possibilità di inserire in una tabella di frontiera *Oracle* le
 informazioni relative a tempo a lavoro e assenze che vengono prelevate via REST da un server ePAS.
 
+## Configurazione di ePAS per il mapping delle tipologie di assenza
+
+UGov Pj Timesheet prevede di raggruppare le assenze in alcune tipologie, per esempio:
+
+ - *F* - FERIE MALATTIE E ROL
+ - *T* - Missione / Trasferta
+ - *A* - PARTECIPAZIONE ALLE ASSEMBLEE DEL PERSONALE
+ - *R* - RIUNIONI RSU
+ - *S* - ATTIVITà SVOLTE COME RLS
+
+è necessario definire una correlazione tra questi codici ed i codici si assenza presenti in ePAS,
+per questo motivo in ePAS è stata aggiunta la possibilità per ogni codice di assenza di specificare
+un campo **External Id**, questo campo deve essere valorizzata per i tipi di assenza che si vogliono
+esportare verso il sistema Cineca con il rispettivo codice Cineca.
+Per esempio i codici ePAS *32*, *31*, *94* dovranno aver valorizzato il campo *External Id* con il valore *F*.
+ 
 ## Configurazione e avvio del servizio tramite docker/docker-compose
 
 ePAS UGov Pj Timesheet può essere facilmente installato via docker-compose su server Linux
@@ -71,7 +87,7 @@ Gli endpoint REST sono protetti tramite Basic Auth, con utente e password config
 le application.properties del servizio, oppure tramite le variabili d'ambiente 
 *spring.security.username*, *spring.security.password* nel caso di avvio tramite docker/docker-compose.
 
-## Visualizzazione task schedulati
+## Task schedulati ogni giorno e loro consultazione
 
 È possibile visualizzare le informazioni dei task cron schedulati per la sincronizzazone
 delle informazioni tra ePAS e le tabelle Oracle di UGOV PJ UWeb Timesheet.
@@ -79,6 +95,12 @@ delle informazioni tra ePAS e le tabelle Oracle di UGOV PJ UWeb Timesheet.
 L'endpoint da consultare è **/actuator/scheduledtasks**.
 
 **Il servizio effettua l'aggiornamento dei dati di presenze ed assenze di tutto il personale oggi mattina alle 05:30 AM.**
+
+## OpenAPI ed interfaccia Swagger integrata
+
+Il servizio espone le informazioni sulle proprie API REST in formato *OpenApi* all'indirizzo **/v3/api-docs**.
+Inoltre è presente un'interfaccia web *Swagger UI* con la descrizione di tutti i servizi REST e la possibilità 
+di effettuare le chiamate REST, l'interfaccia è raggiungibile all'indirizzo **/swagger-ui/index.html**. 
 
 ## Metriche del servizio
 
