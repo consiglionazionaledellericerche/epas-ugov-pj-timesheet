@@ -69,7 +69,9 @@ public class AdminController {
           + "endpoint REST. Il periodo dipende dalla configurazione.")
   @ApiResponses(value = {
       @ApiResponse(responseCode = "200", 
-          description = "Dati sincronizzati e restituito il numero di riepiloghi inseriti")
+          description = "Dati sincronizzati e restituito il numero di riepiloghi inseriti"),
+      @ApiResponse(responseCode = "409", 
+      description = "Operazione non effettuata perché già in corso una sincronizzazione.")
   })
   @PostMapping("/syncAll")
   public ResponseEntity<Integer> syncAll() {
