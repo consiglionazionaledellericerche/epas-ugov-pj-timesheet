@@ -39,6 +39,7 @@ public class SyncJob {
   void syncAllEveryDay() {
     log.info("Sincronizzazione giornaliera via quartz avviata");
     syncService.syncAll();
+    syncService.loadDetails();
     log.info("Sincronizzazione giornaliera via quartz terminata");
   }
 }

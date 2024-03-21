@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import it.cnr.iit.epas.timesheet.ugovpj.service.CachingService;
 import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
@@ -29,6 +30,7 @@ import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
@@ -55,6 +57,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminController {
 
   private final SyncService syncService;
+  private final PersonTimeDetailRepo personTimeDetailRepo;
   private final CachingService cachingService;
   private final PersonTimeDetailMapper mapper;
 
@@ -128,7 +131,10 @@ public class AdminController {
   public ResponseEntity<List<PersonTimeDetailDto>> syncOfficeMonthRecap(
       @RequestParam("officeId") Long officeId, @RequestParam("year") int year, @RequestParam("month") int month) {
     log.info("Ricevuta richiesta aggiornamento del riepilogo mensile per ufficio id={} {}/{}", officeId, month, year);
-    val details = syncService.syncOfficeMonth(officeId, YearMonth.of(year, month), Optional.empty());
+    Long startingId = personTimeDetailRepo.findMaxid().orElse(0L);
+    val details = 
+        syncService.syncOfficeMonth(
+            officeId, YearMonth.of(year, month), Optional.empty(), new AtomicLong(startingId));
     return ResponseEntity.ok().body(details.stream().map(mapper::convert).collect(Collectors.toList()));
   }
 
