@@ -158,4 +158,15 @@ public class TimesheetController {
     return ResponseEntity.ok().body(mapper.convert(timesheetConfig));
   }
 
+  @Operation(
+      summary = "Visualizzazione del massimo id presente nella tabella delle marcature")
+  @ApiResponses(value = {
+      @ApiResponse(responseCode = "200", 
+          description = "Restituiti il massimo id della tabella IE_PJ_MARCATURE.")
+  })
+  @GetMapping("/maxId")
+  public ResponseEntity<Long> maxId() {
+    log.debug("Ricevuta richiesta max id tabelle marcature");
+    return ResponseEntity.ok().body(personTimeDetailRepo.findMaxid().orElse(0L));
+  }
 }

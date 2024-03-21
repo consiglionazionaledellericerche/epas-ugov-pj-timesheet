@@ -21,6 +21,7 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
 
@@ -62,12 +63,11 @@ public class SyncService {
 
   private final MeterRegistry meterRegistry;
 
-  private final Long ID_OFFSET = 100000000L;
-
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
    */
-  private Optional<PersonTimeDetail> syncPersonDayTimeAtWork(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
+  private Optional<PersonTimeDetail> syncPersonDayTimeAtWork(
+      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
     //Inserimento resoconto tempo a lavoro da timbrature
     if (personDay.getTimeAtWork() == 0) {
       log.trace("PersonDay id={} person.number={} ignored time at work, it's zero", 
@@ -76,7 +76,7 @@ public class SyncService {
     }
     val personTimeDetail = 
         PersonTimeDetail.builder()
-          .id(personDay.getId())
+          .id(counter.incrementAndGet())
           .date(personDay.getDate()).minutes(personDay.getTimeAtWork())
           .number(person.getNumber())
           .type(timesheetConfig.getStampingsType())
@@ -89,7 +89,8 @@ public class SyncService {
   /**
    * Sincronizza i dati delle assenze di una persona in un giorno specifico.
    */
-  private List<PersonTimeDetail> syncPersonDayAbsences(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
+  private List<PersonTimeDetail> syncPersonDayAbsences(
+      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
     Map<String, Integer> absenceMap = Maps.newHashMap();
     val timeDetailType = typeService.timeDetailTypes();
     personDay.getAbsences().stream()
@@ -107,7 +108,7 @@ public class SyncService {
       //Inserimento resoconto tempo giustificato per l'assenza
       val personTimeDetail = 
           PersonTimeDetail.builder()
-            .id(personTimeDetailId(personDay, absenceGroup))
+            .id(counter.incrementAndGet())
             .date(personDay.getDate())
             .minutes(absenceMap.get(absenceGroup))
             .number(person.getNumber())
@@ -123,23 +124,26 @@ public class SyncService {
   /**
    * Sincronizza i dati di presenze e assenze di una persona in un giorno specifico.
    */
-  public List<PersonTimeDetail> syncPersonDay(PersonShowTerseDto person, PersonDayShowTerseDto personDay) {
+  public List<PersonTimeDetail> syncPersonDay(
+      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
     log.trace("Sincronizzazione personDay {}", personDay);
     List<PersonTimeDetail> details = Lists.newArrayList();
     //Inserimento resoconto tempo a lavoro da timbrature
-    val timeAtWorkDetail = syncPersonDayTimeAtWork(person, personDay);
+    val timeAtWorkDetail = syncPersonDayTimeAtWork(person, personDay, counter);
     if (timeAtWorkDetail.isPresent()) {
       details.add(timeAtWorkDetail.get());
     }
     //Inserimento delle assenze con externalGroupId rilevante, raggruppate per externalGroupId
-    details.addAll(syncPersonDayAbsences(person, personDay));
+    details.addAll(syncPersonDayAbsences(person, personDay, counter));
     return details;
   }
 
   /**
    * Sincronizzata i dati di presenze e assenze di una persona in un mese.
    */
-  public List<PersonTimeDetail> syncPersonMonth(PersonMonthRecapDto monthRecap, Optional<LocalDate> notBefore) {
+  public List<PersonTimeDetail> syncPersonMonth(
+      PersonMonthRecapDto monthRecap, Optional<LocalDate> notBefore,
+      AtomicLong counter) {
     List<PersonTimeDetail> details = Lists.newArrayList();
     if (Strings.isNullOrEmpty(monthRecap.getPerson().getNumber())) {
       log.info("Ignorata persona {} perché senza matricola", monthRecap.getPerson());
@@ -147,7 +151,7 @@ public class SyncService {
     }
     monthRecap.getPersonDays().forEach(personDay -> {
       if (notBefore.isEmpty() || !personDay.getDate().isBefore(notBefore.get())) {
-        details.addAll(syncPersonDay(monthRecap.getPerson(), personDay));
+        details.addAll(syncPersonDay(monthRecap.getPerson(), personDay, counter));
       }
     });
     return details;
@@ -158,7 +162,8 @@ public class SyncService {
    * di un ufficio nel mese indicato.
    */
   public List<PersonTimeDetail> syncOfficeMonth(
-      long officeId, YearMonth yearMonth, Optional<LocalDate> notBefore) {
+      long officeId, YearMonth yearMonth, Optional<LocalDate> notBefore,
+      AtomicLong counter) {
     log.debug("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}", 
         officeId, yearMonth, notBefore);
     long startTime = System.currentTimeMillis();
@@ -166,7 +171,7 @@ public class SyncService {
     List<PersonTimeDetail> details = Lists.newArrayList();
       val monthRecaps = epasClient.getMonthRecap(officeId, yearMonth.getYear(), yearMonth.getMonthValue());
       monthRecaps.forEach(monthRecap -> {
-        details.addAll(syncPersonMonth(monthRecap, notBefore));
+        details.addAll(syncPersonMonth(monthRecap, notBefore, counter));
       });
     log.info("Terminata sincronizzazione dell'ufficio id={} del {} in {} secondi", 
         officeId, yearMonth, ((System.currentTimeMillis() - startTime) / 1000));
@@ -182,11 +187,12 @@ public class SyncService {
    * Sincronizza i dati di presenze ed assenze del mese passato come parametro per tuti i 
    * dipendenti presenti in ePAS.
    */
-  public List<PersonTimeDetail> syncMonth(YearMonth yearMonth, Optional<LocalDate> notBefore) {
+  public List<PersonTimeDetail> syncMonth(YearMonth yearMonth, Optional<LocalDate> notBefore, 
+      AtomicLong counter) {
     List<PersonTimeDetail> details = Lists.newArrayList();
     val offices = epasClient.getActiveOffices(yearMonth.atDay(1));
     offices.forEach(office -> {
-      details.addAll(syncOfficeMonth(office.getId(), yearMonth, notBefore));
+      details.addAll(syncOfficeMonth(office.getId(), yearMonth, notBefore, counter));
     });
     return details;
   }
@@ -201,8 +207,10 @@ public class SyncService {
     if (timesheetConfig.isDeleteBeforeSyncAll()) {
       deleteAllPersonTimeDetails();
     }
+    Long startingId = repo.findMaxid().orElse(0L);
+    AtomicLong counter = new AtomicLong(startingId);
     while (!yearMonth.isAfter(YearMonth.from(LocalDate.now()))) {
-      details.addAll(syncMonth(yearMonth, Optional.of(startingDate)));
+      details.addAll(syncMonth(yearMonth, Optional.of(startingDate), counter));
       yearMonth = yearMonth.plusMonths(1);
     }
     Gauge.builder("epas_synch_details_count", () -> details.size())
@@ -233,15 +241,6 @@ public class SyncService {
   public void loadDetailsNative() {
     repo.loadDetailsNative();
     repo.loadDetailsJobNative();
-  }
-
-  /**
-   * Genera un ID univoco per le righe di marcatura di un dipendente di un
-   * giorno. Per ogni absenceGroup viene generato un ID basato sul suo hashcode
-   * a cui viene sommato un offset.
-   */
-  public Long personTimeDetailId(PersonDayShowTerseDto personDay, String absenceGroup) {
-    return personDay.getId() + ID_OFFSET + absenceGroup.hashCode();
   }
 
 }
