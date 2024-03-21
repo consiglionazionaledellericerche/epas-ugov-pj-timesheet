@@ -38,6 +38,7 @@ import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonDayShowTerseDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonMonthRecapDto;
 import it.cnr.iit.epas.timesheet.ugovpj.client.dto.PersonShowTerseDto;
 import it.cnr.iit.epas.timesheet.ugovpj.config.TimesheetConfig;
+import it.cnr.iit.epas.timesheet.ugovpj.exceptions.ConcurrentSyncException;
 import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
 import it.cnr.iit.epas.timesheet.ugovpj.repo.PersonTimeDetailRepo;
 import lombok.RequiredArgsConstructor;
@@ -62,6 +63,8 @@ public class SyncService {
   private final TimesheetConfig timesheetConfig;
 
   private final MeterRegistry meterRegistry;
+
+  private final SemaphoreService semaphore;
 
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
@@ -199,6 +202,12 @@ public class SyncService {
 
   @Timed(value = "epas_sync_all_time", description = "Time taken to sync all the details")
   public List<PersonTimeDetail> syncAll() {
+
+    // Acquisizione del semaforo per evitare più sincronizzazioni in contemporanea
+    if (!semaphore.tryAcquire()) {
+      throw new ConcurrentSyncException("syncAll already started");
+    }
+
     List<PersonTimeDetail> details = Lists.newArrayList();
     LocalDate startingDate = LocalDate.now().minusDays(timesheetConfig.getDaysInThePast());
     long startTime = System.currentTimeMillis();
@@ -216,6 +225,9 @@ public class SyncService {
     Gauge.builder("epas_synch_details_count", () -> details.size())
       .description("A current number of books in the system")
       .register(meterRegistry);
+
+    //Rilascio del semaforo per permettere altre sincronizzazioni
+    semaphore.release();
     log.info("Synchronization ended in {} seconds", ((System.currentTimeMillis() - startTime) / 1000));
     return details;
   }

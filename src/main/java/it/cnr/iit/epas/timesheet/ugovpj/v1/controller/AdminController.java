@@ -16,6 +16,19 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.v1.controller;
 
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,20 +40,9 @@ import it.cnr.iit.epas.timesheet.ugovpj.service.SyncService;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.ApiRoutes;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailDto;
 import it.cnr.iit.epas.timesheet.ugovpj.v1.dto.PersonTimeDetailMapper;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.val;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Controller REST con varie operazioni di amministrazione.

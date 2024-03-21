@@ -21,6 +21,11 @@ nelle tabelle di frontiera Oracle di UGov Pj UWeb Timesheet Intime.
 UGov PJ UWeb Timesheet prevede la possibilità di inserire in una tabella di frontiera *Oracle* le
 informazioni relative a tempo a lavoro e assenze che vengono prelevate via REST da un server ePAS.
 
+All'interno di ePAS è necessario create un utente che abbia il ruolo di sistema
+*Consultatore riepiloghi orari e assenze*, le credenziali di questo utente devono essere poi
+specificate nella configurazione di questo servizio (*epas.username*, *epas.password*).
+
+
 ## Configurazione di ePAS per il mapping delle tipologie di assenza
 
 UGov Pj Timesheet prevede di raggruppare le assenze in alcune tipologie, per esempio:
@@ -99,8 +104,7 @@ L'endpoint da consultare è **/actuator/scheduledtasks**.
 ## OpenAPI ed interfaccia Swagger integrata
 
 Il servizio espone le informazioni sulle proprie API REST in formato *OpenApi* all'indirizzo **/v3/api-docs**.
-Inoltre è presente un'interfaccia web *Swagger UI* con la descrizione di tutti i servizi REST e la possibilità 
-di effettuare le chiamate REST, l'interfaccia è raggiungibile all'indirizzo **/swagger-ui/index.html**. 
+Inoltre è presente un'interfaccia web *Swagger UI* con la descrizione di tutti i servizi REST e la possibilità di effettuare le chiamate REST, l'interfaccia è raggiungibile all'indirizzo **/swagger-ui/index.html**. 
 
 ## Metriche del servizio
 
