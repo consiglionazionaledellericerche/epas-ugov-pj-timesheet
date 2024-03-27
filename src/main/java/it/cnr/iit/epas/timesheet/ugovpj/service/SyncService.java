@@ -70,20 +70,34 @@ public class SyncService {
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
    */
   private Optional<PersonTimeDetail> syncPersonDayTimeAtWork(
-      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
+      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter, boolean containsAbsences) {
     //Inserimento resoconto tempo a lavoro da timbrature
-    if (personDay.getTimeAtWork() == 0) {
-      log.trace("PersonDay id={} person.number={} ignored time at work, it's zero", 
-          personDay.getId(), person.getNumber());
-      return Optional.empty();
-    }
     val personTimeDetail = 
         PersonTimeDetail.builder()
           .id(counter.incrementAndGet())
-          .date(personDay.getDate()).minutes(personDay.getTimeAtWork())
+          .date(personDay.getDate())
           .number(person.getNumber())
           .type(timesheetConfig.getStampingsType())
           .build();
+
+    //Se il giorno contiene assenze allora non si prende il timeAtWork (che è il tempo giustificato)
+    //ma il tempo da timbrature
+    if (containsAbsences) {
+      if (personDay.getStampingsTime() == 0) {
+        log.debug("PersonDay id={}, date={} person.number={} ignored stampings time, it's zero", 
+            personDay.getId(), personDay.getDate(), person.getNumber());
+        return Optional.empty();
+      }
+      personTimeDetail.setMinutes(personDay.getStampingsTime());
+    } else {
+      if (personDay.getTimeAtWork() == 0) {
+        log.debug("PersonDay id={} date={}, person.number={} ignored time at work, it's zero", 
+            personDay.getId(), personDay.getDate(), person.getNumber());
+        return Optional.empty();
+      }
+      personTimeDetail.setMinutes(personDay.getTimeAtWork());
+    }
+
     repo.persistAndFlush(personTimeDetail);
     log.debug("Salvato tempo al lavoro personTimeDetail {}", personTimeDetail);
     return Optional.of(personTimeDetail);
@@ -101,9 +115,9 @@ public class SyncService {
     .forEach(absence -> {
       if (absenceMap.containsKey(absence.getExternalTypeId())) {
         Integer previousValue = absenceMap.get(absence.getExternalTypeId());
-        absenceMap.replace(absence.getExternalTypeId(), absence.getJustifiedTime() + previousValue);
+        absenceMap.replace(absence.getExternalTypeId(), Optional.ofNullable(absence.getJustifiedTime()).orElse(0) + previousValue);
       } else {
-        absenceMap.put(absence.getExternalTypeId(), absence.getJustifiedTime());
+        absenceMap.put(absence.getExternalTypeId(), Optional.ofNullable(absence.getJustifiedTime()).orElse(0));
       }
     });
     List<PersonTimeDetail> details = Lists.newArrayList();
@@ -131,8 +145,10 @@ public class SyncService {
       PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
     log.trace("Sincronizzazione personDay {}", personDay);
     List<PersonTimeDetail> details = Lists.newArrayList();
+    val containsAbsences = 
+        personDay.getAbsences().stream().filter(a -> a.getIsRealAbsence()).count() > 0;
     //Inserimento resoconto tempo a lavoro da timbrature
-    val timeAtWorkDetail = syncPersonDayTimeAtWork(person, personDay, counter);
+    val timeAtWorkDetail = syncPersonDayTimeAtWork(person, personDay, counter, containsAbsences);
     if (timeAtWorkDetail.isPresent()) {
       details.add(timeAtWorkDetail.get());
     }
@@ -207,27 +223,31 @@ public class SyncService {
     if (!semaphore.tryAcquire()) {
       throw new ConcurrentSyncException("syncAll already started");
     }
-
     List<PersonTimeDetail> details = Lists.newArrayList();
-    LocalDate startingDate = LocalDate.now().minusDays(timesheetConfig.getDaysInThePast());
     long startTime = System.currentTimeMillis();
-    log.info("Starting synchronization since {}", startingDate);
-    YearMonth yearMonth = YearMonth.from(startingDate);
-    if (timesheetConfig.isDeleteBeforeSyncAll()) {
-      deleteAllPersonTimeDetails();
+    try {
+      LocalDate startingDate = LocalDate.now().minusDays(timesheetConfig.getDaysInThePast());
+      log.info("Starting synchronization since {}", startingDate);
+      YearMonth yearMonth = YearMonth.from(startingDate);
+      if (timesheetConfig.isDeleteBeforeSyncAll()) {
+        deleteAllPersonTimeDetails();
+      }
+      Long startingId = repo.findMaxid().orElse(0L);
+      AtomicLong counter = new AtomicLong(startingId);
+      while (!yearMonth.isAfter(YearMonth.from(LocalDate.now()))) {
+        details.addAll(syncMonth(yearMonth, Optional.of(startingDate), counter));
+        yearMonth = yearMonth.plusMonths(1);
+      }
+      Gauge.builder("epas_synch_details_count", () -> details.size())
+        .description("Totale delle righe esportate durante la syncAll")
+        .register(meterRegistry);
+    } catch (Exception e) {
+      log.warn("Problema durante la syncAll", e);
+      throw e;
+    } finally {
+      //Rilascio del semaforo per permettere altre sincronizzazioni
+      semaphore.release();
     }
-    Long startingId = repo.findMaxid().orElse(0L);
-    AtomicLong counter = new AtomicLong(startingId);
-    while (!yearMonth.isAfter(YearMonth.from(LocalDate.now()))) {
-      details.addAll(syncMonth(yearMonth, Optional.of(startingDate), counter));
-      yearMonth = yearMonth.plusMonths(1);
-    }
-    Gauge.builder("epas_synch_details_count", () -> details.size())
-      .description("A current number of books in the system")
-      .register(meterRegistry);
-
-    //Rilascio del semaforo per permettere altre sincronizzazioni
-    semaphore.release();
     log.info("Synchronization ended in {} seconds", ((System.currentTimeMillis() - startTime) / 1000));
     return details;
   }

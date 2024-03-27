@@ -36,6 +36,7 @@ public class AbsenceShowTerseDto {
   private LocalDate date;
   private String code;
   private Long absenceTypeId;
+  private Boolean isRealAbsence;
   private Integer justifiedTime;
   private String justifiedType;
   private String note;
