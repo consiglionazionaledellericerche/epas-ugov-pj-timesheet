@@ -19,6 +19,8 @@ package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 import com.google.common.collect.Lists;
 import java.time.LocalDate;
 import java.util.List;
+
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -28,6 +30,7 @@ import lombok.EqualsAndHashCode;
  * @author Cristian Lucchesi
  *
  */
+@Builder
 @Data
 @EqualsAndHashCode(of = "id")
 public class PersonDayShowTerseDto {
@@ -38,11 +41,13 @@ public class PersonDayShowTerseDto {
   private int difference;
   private int progressive;
   private int stampingsTime;
+  private Integer decurtedMeal;
   private boolean isTicketAvailable;
   private boolean isHoliday;
 
   //private List<StampingShowTerseDto> stampings = Lists.newArrayList();
 
+  @Builder.Default
   private List<AbsenceShowTerseDto> absences = Lists.newArrayList();
 
 }
