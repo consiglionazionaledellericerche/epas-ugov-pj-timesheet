@@ -16,6 +16,7 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -24,6 +25,7 @@ import lombok.Data;
  * @author Cristian Lucchesi
  *
  */
+@Builder
 @Data
 public class PersonShowTerseDto {
   

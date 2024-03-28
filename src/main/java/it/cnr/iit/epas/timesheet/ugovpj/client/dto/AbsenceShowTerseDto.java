@@ -18,6 +18,8 @@ package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -28,6 +30,7 @@ import lombok.EqualsAndHashCode;
  * @author Cristian Lucchesi
  *
  */
+@Builder
 @Data
 @EqualsAndHashCode(of = "id")
 public class AbsenceShowTerseDto {
@@ -36,6 +39,7 @@ public class AbsenceShowTerseDto {
   private LocalDate date;
   private String code;
   private Long absenceTypeId;
+  private Boolean isRealAbsence;
   private Integer justifiedTime;
   private String justifiedType;
   private String note;

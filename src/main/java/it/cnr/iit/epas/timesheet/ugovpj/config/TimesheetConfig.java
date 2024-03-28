@@ -16,11 +16,14 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.config;
 
+import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+
+import com.google.common.collect.Lists;
 
 /**
  * Contenitore dei parametri di configurazione per l'integrazione dei dati
@@ -37,6 +40,8 @@ import org.springframework.context.annotation.Configuration;
 public class TimesheetConfig {
 
   private String stampingsType = "N";
+  private List<String> allDayPresenceCodes = 
+      Lists.newArrayList("assign_all_day", "complete_day_and_add_overtime");
   private int daysInThePast = 90;
   private boolean deleteBeforeSyncAll = true;
 
