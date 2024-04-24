@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
@@ -67,6 +67,8 @@ public class SyncService {
 
   private final SemaphoreService semaphore;
 
+  @Value("${timesheet.number.length.max}")
+  private Integer numberMaxLenght;
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
    */
@@ -195,6 +197,12 @@ public class SyncService {
       log.info("Ignorata persona {} perché senza matricola", monthRecap.getPerson());
       return details;
     }
+    if (monthRecap.getPerson().getNumber().length() > Optional.ofNullable(numberMaxLenght).orElse(6)) {
+      log.info("Ignorata persona {} perché la matricola è più lunga di {} caratteri", 
+          monthRecap.getPerson(), numberMaxLenght);
+      return details;
+    }
+
     monthRecap.getPersonDays().forEach(personDay -> {
       if (notBefore.isEmpty() || !personDay.getDate().isBefore(notBefore.get())) {
         details.addAll(syncPersonDay(monthRecap.getPerson(), personDay, counter));
@@ -210,7 +218,7 @@ public class SyncService {
   public List<PersonTimeDetail> syncOfficeMonth(
       long officeId, YearMonth yearMonth, Optional<LocalDate> notBefore,
       AtomicLong counter) {
-    log.debug("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}", 
+    log.info("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}", 
         officeId, yearMonth, notBefore);
     long startTime = System.currentTimeMillis();
     Timer.Sample timer = Timer.start(meterRegistry);

@@ -44,20 +44,20 @@ public interface PersonTimeDetailRepo
   @Query(value = "DELETE FROM PersonTimeDetail ptd")
   void truncateTable();
 
-  @Procedure(procedureName = "IE_PJ.P_CARICA_MARCATURE")
+  @Procedure(name = PersonTimeDetail.LOAD_DETAILS_PROCEDURE_NAME)
   void loadDetails();
 
-  @Procedure(procedureName = "IE_PJ.P_CARICA_MARCATURE_JOB")
+  @Procedure(name = PersonTimeDetail.LOAD_DETAILS_JOB_PROCEDURE_NAME)
   void loadDetailsJob();
 
   @Transactional
   @Modifying
-  @Query(value = "call IE_PJ.P_CARICA_MARCATURE", nativeQuery = true)
+  @Query(value = "call PJ_TIMESHEET.P_CARICA_MARCATURE", nativeQuery = true)
   void loadDetailsNative();
 
   @Transactional
   @Modifying
-  @Query(value = "call P_CARICA_MARCATURE_JOB", nativeQuery = true)
+  @Query(value = "call PJ_TIMESHEET.P_CARICA_MARCATURE_JOB", nativeQuery = true)
   void loadDetailsJobNative();
 
   @Query(value = "SELECT MAX(ptd.id) FROM PersonTimeDetail ptd")
