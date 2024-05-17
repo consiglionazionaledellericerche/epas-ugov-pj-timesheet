@@ -52,12 +52,12 @@ public interface PersonTimeDetailRepo
 
   @Transactional
   @Modifying
-  @Query(value = "call PJ_TIMESHEET.P_CARICA_MARCATURE", nativeQuery = true)
+  @Query(value = "call IE_PJ.TS_P_CARICA_MARCATURE()", nativeQuery = true)
   void loadDetailsNative();
 
   @Transactional
   @Modifying
-  @Query(value = "call PJ_TIMESHEET.P_CARICA_MARCATURE_JOB", nativeQuery = true)
+  @Query(value = "call IE_PJ.TS_P_CARICA_MARCATURE_JOB()", nativeQuery = true)
   void loadDetailsJobNative();
 
   @Query(value = "SELECT MAX(ptd.id) FROM PersonTimeDetail ptd")

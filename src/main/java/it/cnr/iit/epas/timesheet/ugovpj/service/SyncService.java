@@ -107,6 +107,7 @@ public class SyncService {
           .id(counter.incrementAndGet())
           .date(personDay.getDate())
           .number(person.getNumber())
+          .cdExt(person.getNumber())
           .minutes(workingTime)
           .type(timesheetConfig.getStampingsType())
           .build();
@@ -145,6 +146,7 @@ public class SyncService {
             .date(personDay.getDate())
             .minutes(absenceMap.get(absenceGroup))
             .number(person.getNumber())
+            .cdExt(person.getNumber())
             .type(absenceGroup)
             .build();
       repo.persistAndFlush(personTimeDetail);

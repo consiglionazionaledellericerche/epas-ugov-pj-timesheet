@@ -16,8 +16,6 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.model;
 
-import java.time.LocalDate;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -25,6 +23,7 @@ import jakarta.persistence.NamedStoredProcedureQueries;
 import jakarta.persistence.NamedStoredProcedureQuery;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -39,11 +38,11 @@ import lombok.ToString;
 @NamedStoredProcedureQueries({
     @NamedStoredProcedureQuery(
         name=PersonTimeDetail.LOAD_DETAILS_PROCEDURE_NAME,
-        procedureName="PJ_TIMESHEET.P_CARICA_MARCATURE"
+        procedureName="IE_PJ.TS_P_CARICA_MARCATURE"
         ),
     @NamedStoredProcedureQuery(
         name=PersonTimeDetail.LOAD_DETAILS_JOB_PROCEDURE_NAME,
-        procedureName="PJ_TIMESHEET.P_CARICA_MARCATURE_JOB"
+        procedureName="IE_PJ.TS_P_CARICA_MARCATURE_JOB"
         )
 })
 @NoArgsConstructor
@@ -57,7 +56,9 @@ public class PersonTimeDetail {
 
   public final static String LOAD_DETAILS_PROCEDURE_NAME = "loadDetails";
   public final static String LOAD_DETAILS_JOB_PROCEDURE_NAME = "loadDetailsJob";
+
   @Id
+  //@GeneratedValue(strategy = GenerationType.SEQUENCE)
   @Column(name = "ID_IE_PJ_MARCATURE")
   private Long id;
 
@@ -68,6 +69,10 @@ public class PersonTimeDetail {
   @NotNull
   @Column(name = "MATRICOLA")
   private String number;
+
+  @NotNull
+  @Column(name = "CD_EXT1")
+  private String cdExt;
 
   @NotNull
   @Column(name = "MARCATURA")

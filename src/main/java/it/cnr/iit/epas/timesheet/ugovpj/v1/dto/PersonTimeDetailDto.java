@@ -35,6 +35,7 @@ public class PersonTimeDetailDto {
   private Long id;
   private LocalDate date;
   private String number;
+  private String cdExt;
   private int minutes;
   private int permanent = 0;
   private String type;
