@@ -1,5 +1,3 @@
-version: "3.3"
-
 #################################################################################
 #                          ePAS UGov PJ Timesheet                               #
 # Configurazione per l'avvio del servizio di integrazione tra ePAS ed           #
@@ -8,14 +6,14 @@ version: "3.3"
 #################################################################################
 
 services:
-  epas-helpdesk-service:
+  epas-ugov-pj-service:
     image: ghcr.io/consiglionazionaledellericerche/epas-ugov-pj-timesheet:latest
     container_name: epas-ugov-pj-timesheet
     ports:
       - 8080:8080
     environment:
       - spring.profiles.active=prod
-
+      - TZ=Europe/Rome
       # Impostazione parametri per collegamento al db Oracle di Cineca
       # l'accesso al database sarà molto probabilmente condizionato all'utilizzo
       # di una VPN Cineca
