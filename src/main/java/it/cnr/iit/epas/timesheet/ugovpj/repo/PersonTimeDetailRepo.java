@@ -16,18 +16,15 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.repo;
 
+import io.hypersistence.utils.spring.repository.BaseJpaRepository;
+import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
+import jakarta.transaction.Transactional;
 import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.query.Procedure;
-
-import io.hypersistence.utils.spring.repository.BaseJpaRepository;
-import it.cnr.iit.epas.timesheet.ugovpj.model.PersonTimeDetail;
-import jakarta.transaction.Transactional;
 
 /**
  * Repository per l'accesso e la gestione dei dati del PersonTimeDetail.
@@ -43,22 +40,6 @@ public interface PersonTimeDetailRepo
   @Modifying
   @Query(value = "DELETE FROM PersonTimeDetail ptd")
   void truncateTable();
-
-  @Procedure(name = PersonTimeDetail.LOAD_DETAILS_PROCEDURE_NAME)
-  void loadDetails();
-
-  @Procedure(name = PersonTimeDetail.LOAD_DETAILS_JOB_PROCEDURE_NAME)
-  void loadDetailsJob();
-
-  @Transactional
-  @Modifying
-  @Query(value = "call IE_PJ.TS_P_CARICA_MARCATURE()", nativeQuery = true)
-  void loadDetailsNative();
-
-  @Transactional
-  @Modifying
-  @Query(value = "call IE_PJ.TS_P_CARICA_MARCATURE_JOB()", nativeQuery = true)
-  void loadDetailsJobNative();
 
   @Query(value = "SELECT MAX(ptd.id) FROM PersonTimeDetail ptd")
   Optional<Long> findMaxid();

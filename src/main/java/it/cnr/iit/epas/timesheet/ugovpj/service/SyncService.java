@@ -59,6 +59,7 @@ public class SyncService {
 
   private final PersonTimeDetailRepo repo;
   private final TimeDetailTypeService typeService;
+  private final PersonTimeDetailLoadService detailLoadService;
 
   private final EpasClient epasClient;
   private final TimesheetConfig timesheetConfig;
@@ -299,17 +300,8 @@ public class SyncService {
    * nella tabella definitiva.
    */
   public void loadDetails() {
-    repo.loadDetails();
-    repo.loadDetailsJob();
-  }
-
-  /**
-   * Invoca le stored procedure per il caricamento dei dati delle marcature
-   * nella tabella definitiva utilizzando native query.
-   */
-  public void loadDetailsNative() {
-    repo.loadDetailsNative();
-    repo.loadDetailsJobNative();
+    detailLoadService.loadDetails();
+    detailLoadService.loadDetailsJob();
   }
 
 }

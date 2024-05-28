@@ -33,7 +33,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
     info = @Info(title = "ePAS UGov PJ Timesheet",
-    version = "0.1.0", 
+    version = "0.2.0", 
     description = "ePAS UGov PJ Timesheet è il servizio per l'integrazione dei dati delle presenze/assenze presenti"
         + "in ePAS con le tabelle di frontiera Oracle di UGov PJ UWeb Timesheet Intime di Cineca"),
     servers = {
