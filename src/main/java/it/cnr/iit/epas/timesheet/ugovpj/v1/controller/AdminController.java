@@ -108,20 +108,6 @@ public class AdminController {
   }
 
   @Operation(
-      summary = "Effettua il caricamento definitivo dei dati delle presenze/assenza, invocando le apposite "
-          + "stored procedures (in modo SQL nativo, senza utilizzare Spring Data).")
-  @ApiResponses(value = {
-      @ApiResponse(responseCode = "200", 
-          description = "Stored procedure di caricamento definitivo dei dati invocate correttamente")
-  })
-  @PostMapping("/loadDetailsNative")
-  public ResponseEntity<Void> loadDetailsNative() {
-    log.debug("Richiesta caricamento definitivo dati tramite stored procedure (native)");
-    syncService.loadDetailsNative();
-    return ResponseEntity.ok().build();
-  }
-
-  @Operation(
       summary = "Effettua la sincronizzazione dei dati di presenza/assenza di un singolo ufficio "
           + "in un singolo mese.")
   @ApiResponses(value = {
