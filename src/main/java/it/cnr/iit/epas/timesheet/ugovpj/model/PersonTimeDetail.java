@@ -86,4 +86,11 @@ public class PersonTimeDetail {
   @Column(name = "TIPO_MARCATURA")
   private String type;
 
+  @NotNull
+  @Column(name = "FL_ASSENZA")
+  private int isAbsence;
+
+  @Column(name = "DS_GIUSTIFICATIVO")
+  private String absenceDescription;
+
 }

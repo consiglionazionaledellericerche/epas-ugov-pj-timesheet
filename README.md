@@ -1,7 +1,7 @@
 # ePAS - UGov PJ UWeb  Timesheet
 ## ePAS - UGov PJ UWeb Timesheet - Integration service
 
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-17-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-25-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
 
 *ePAS - UGov PJ UWeb Timesheet* è il servizio che permette di esportare le informazioni presenti in
 [ePAS](https://epas.projects.iit.cnr.it) nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca denominato *UGov PJ UWeb Timesheet Intime*.
