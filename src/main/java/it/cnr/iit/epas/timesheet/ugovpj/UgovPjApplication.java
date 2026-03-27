@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2026  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.hypersistence.utils.spring.repository.BaseJpaRepositoryImpl;
@@ -29,6 +30,7 @@ import io.hypersistence.utils.spring.repository.BaseJpaRepositoryImpl;
  *
  * @author Cristian Lucchesi
  */
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 @EnableJpaRepositories(repositoryBaseClass = BaseJpaRepositoryImpl.class)
 @EnableScheduling
 @EnableFeignClients

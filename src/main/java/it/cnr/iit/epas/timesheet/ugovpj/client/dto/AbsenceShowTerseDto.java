@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2026  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -19,6 +19,7 @@ package it.cnr.iit.epas.timesheet.ugovpj.client.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -38,6 +39,7 @@ public class AbsenceShowTerseDto {
   private Long id;
   private LocalDate date;
   private String code;
+  private String description;
   private Long absenceTypeId;
   private Boolean isRealAbsence;
   private Integer justifiedTime;
@@ -47,4 +49,8 @@ public class AbsenceShowTerseDto {
   private String externalTypeId;
   private LocalDateTime updatedAt;
 
+  @JsonIgnore
+  public String getLabel() {
+    return code + " - " + description;
+  }
 }

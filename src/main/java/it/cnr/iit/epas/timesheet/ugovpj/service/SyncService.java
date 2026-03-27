@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024  Consiglio Nazionale delle Ricerche
+ * Copyright (C) 2026  Consiglio Nazionale delle Ricerche
  *
  *     This program is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU Affero General Public License as
@@ -110,6 +110,8 @@ public class SyncService {
           .number(person.getNumber())
           .cdExt(person.getNumber())
           .minutes(workingTime)
+          //Zero indica che non è un assenza
+          .isAbsence(0)
           .type(timesheetConfig.getStampingsType())
           .build();
     repo.persistAndFlush(personTimeDetail);
@@ -117,42 +119,50 @@ public class SyncService {
     return Optional.of(personTimeDetail);
   }
 
+  private PersonTimeDetail personTimeDetailFromAbsence(
+          PersonShowTerseDto person, AbsenceShowTerseDto absence, AtomicLong counter, String absenceTimeDetailType) {
+    return  PersonTimeDetail.builder()
+            .id(counter.incrementAndGet())
+            .date(absence.getDate())
+            .minutes(absence.getJustifiedTime())
+            .number(person.getNumber())
+            .cdExt(person.getNumber())
+            //Uno indica che è un assenza
+            .isAbsence(1)
+            .absenceDescription(absence.getLabel())
+            .type(absenceTimeDetailType)
+            .build();
+  }
+
   /**
    * Sincronizza i dati delle assenze di una persona in un giorno specifico.
    */
-  private List<PersonTimeDetail> syncPersonDayAbsences(
-      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
-    Map<String, Integer> absenceMap = Maps.newHashMap();
-    val timeDetailType = typeService.timeDetailTypes();
-    personDay.getAbsences().stream()
-      .filter(absence -> timeDetailType.contains(absence.getExternalTypeId()))
-      .forEach(absence -> {
-        if (absenceMap.containsKey(absence.getExternalTypeId())) {
-          Integer previousValue = absenceMap.get(absence.getExternalTypeId());
-          absenceMap.replace(
-              absence.getExternalTypeId(),
-              Optional.ofNullable(absence.getJustifiedTime()).orElse(0) + previousValue);
-        } else {
-          absenceMap.put(
-              absence.getExternalTypeId(),
-              Optional.ofNullable(absence.getJustifiedTime()).orElse(0));
-        }
-    });
+  private List<PersonTimeDetail> syncPersonDayAbsencesWithDescription(
+          PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter){
+    val timeDetailTypes = typeService.timeDetailTypes();
     List<PersonTimeDetail> details = Lists.newArrayList();
-    absenceMap.keySet().stream().forEach(absenceGroup -> {
-      //Inserimento resoconto tempo giustificato per l'assenza
-      val personTimeDetail = 
-          PersonTimeDetail.builder()
-            .id(counter.incrementAndGet())
-            .date(personDay.getDate())
-            .minutes(absenceMap.get(absenceGroup))
-            .number(person.getNumber())
-            .cdExt(person.getNumber())
-            .type(absenceGroup)
-            .build();
-      repo.persistAndFlush(personTimeDetail);
-      log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
-      details.add(personTimeDetail);
+    log.debug("Persona number={}, data={}, sincronizzazione assenze {}",
+            person.getNumber(), personDay.getDate(), personDay.getAbsences().size());
+
+    personDay.getAbsences().stream()
+            .filter(absence ->
+                            //Le missioni vengono inserite anche se si tratta non di "realAbsence"
+                            (absence.getIsRealAbsence() || "T".equalsIgnoreCase(absence.getExternalTypeId()))
+                            && absence.getJustifiedType() != null
+                            && !absence.getJustifiedType().equals("nothing")
+                      )
+            .forEach(absence -> {
+              String absenceTimeDetailType = Optional.ofNullable(absence.getExternalTypeId()).orElse("X");
+              log.info("Persona number={}, sincronizzazione assenza {} con tipo {}",
+                      person.getNumber(), absence.getLabel(), absenceTimeDetailType);
+              if (timeDetailTypes.contains(absenceTimeDetailType)) {
+                val personTimeDetail = personTimeDetailFromAbsence(person, absence, counter, absenceTimeDetailType);
+                repo.persistAndFlush(personTimeDetail);
+                details.add(personTimeDetail);
+                log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
+              } else {
+                log.warn("Tipo di dettaglio assenza non trovato per {}: {}", absence.getLabel(), absenceTimeDetailType);
+              }
     });
     return details;
   }
@@ -172,20 +182,15 @@ public class SyncService {
         personDay.getAbsences().stream()
           .filter(a -> !a.getIsRealAbsence() && a.getJustifiedTime() != null)
           .map(AbsenceShowTerseDto::getJustifiedTime).reduce(0, Integer::sum);
-    val containsAssignAllDay = 
-        personDay.getAbsences().stream()
-          .filter(
-              a -> a.getJustifiedType() != null && 
-                  timesheetConfig.getAllDayPresenceCodes().contains(a.getJustifiedType()))
-          .count() > 0;
+    val containsAssignAllDay =
+            personDay.getAbsences().stream().anyMatch(a -> a.getJustifiedType() != null &&
+                    timesheetConfig.getAllDayPresenceCodes().contains(a.getJustifiedType()));
     //Inserimento resoconto tempo a lavoro da timbrature
     val timeAtWorkDetail = 
         syncPersonDayTimeAtWork(person, personDay, counter, minutesByAbsences, minutesByPresenceCode, containsAssignAllDay);
-    if (timeAtWorkDetail.isPresent()) {
-      details.add(timeAtWorkDetail.get());
-    }
-    //Inserimento delle assenze con externalGroupId rilevante, raggruppate per externalGroupId
-    details.addAll(syncPersonDayAbsences(person, personDay, counter));
+      timeAtWorkDetail.ifPresent(details::add);
+    //Inserimento delle assenze con externalGroupId rilevante
+    details.addAll(syncPersonDayAbsencesWithDescription(person, personDay, counter));
     return details;
   }
 

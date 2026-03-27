@@ -39,5 +39,7 @@ public class PersonTimeDetailDto {
   private int minutes;
   private int permanent = 0;
   private String type;
+  private int isAbsence;
+  private String absenceDescription;
 
 }
