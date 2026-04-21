@@ -40,6 +40,8 @@ import com.google.common.collect.Lists;
 public class TimesheetConfig {
 
   private String stampingsType = "N";
+  private String absencesType = "X";
+
   private List<String> allDayPresenceCodes = 
       Lists.newArrayList("assign_all_day", "complete_day_and_add_overtime");
   private int daysInThePast = 90;

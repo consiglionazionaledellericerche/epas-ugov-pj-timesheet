@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -70,6 +72,7 @@ public class SyncService {
 
   @Value("${timesheet.number.length.max}")
   private Integer numberMaxLenght;
+
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
    */
@@ -133,6 +136,45 @@ public class SyncService {
             .type(absenceTimeDetailType)
             .build();
   }
+
+  private Stream<AbsenceShowTerseDto> getAbsencesToSend(PersonDayShowTerseDto personDay) {
+
+    return personDay.getAbsences().stream()
+            .filter(absence ->
+                    //Le missioni vengono inserite anche se si tratta non di "realAbsence"
+                    (absence.getIsRealAbsence() || "T".equalsIgnoreCase(absence.getExternalTypeId()))
+                            && absence.getJustifiedType() != null
+                            && !absence.getJustifiedType().equals("nothing")
+            );
+  }
+
+  private List<AbsenceShowTerseDto> aggregateAbsences(Stream<AbsenceShowTerseDto> absences) {
+    if (absences == null) {
+      return Lists.newArrayList();
+    }
+    absences.forEach(absence -> {
+      if (Strings.isNullOrEmpty(absence.getExternalTypeId())) {
+        //Default type X per assenza non specificata
+        absence.setExternalTypeId(timesheetConfig.getAbsencesType());
+      }
+    });
+    val timeDetailType = typeService.timeDetailTypes();
+    Map<String, AbsenceShowTerseDto> absenceMap = Maps.newHashMap();
+    absences
+            .filter(absence -> timeDetailType.contains(absence.getExternalTypeId()))
+            .forEach(absence -> {
+              if (absenceMap.containsKey(absence.getExternalTypeId())) {
+                val previousAbsence = absenceMap.get(absence.getExternalTypeId());
+                Integer previousValue = previousAbsence.getJustifiedTime();
+                previousAbsence.setJustifiedTime(Optional.ofNullable(previousValue).orElse(0) + absence.getJustifiedTime());
+              } else {
+                absenceMap.put(
+                        absence.getExternalTypeId(),
+                        absence);
+              }
+            });
+    return Lists.newArrayList(absenceMap.values());
+    }
 
   /**
    * Sincronizza i dati delle assenze di una persona in un giorno specifico.
