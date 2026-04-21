@@ -49,8 +49,19 @@ public class AbsenceShowTerseDto {
   private String externalTypeId;
   private LocalDateTime updatedAt;
 
+  private String extendedLabel;
+
   @JsonIgnore
   public String getLabel() {
     return code + " - " + description;
+  }
+
+  @JsonIgnore
+  public String getExtendedLabel() {
+    if (extendedLabel != null) {
+      return extendedLabel;
+    } else {
+      return getLabel();
+    }
   }
 }

@@ -167,6 +167,7 @@ public class SyncService {
                 val previousAbsence = absenceMap.get(absence.getExternalTypeId());
                 Integer previousValue = previousAbsence.getJustifiedTime();
                 previousAbsence.setJustifiedTime(Optional.ofNullable(previousValue).orElse(0) + absence.getJustifiedTime());
+                previousAbsence.setExtendedLabel(previousAbsence.getExtendedLabel() + "; " + absence.getLabel());
               } else {
                 absenceMap.put(
                         absence.getExternalTypeId(),
@@ -186,25 +187,18 @@ public class SyncService {
     log.debug("Persona number={}, data={}, sincronizzazione assenze {}",
             person.getNumber(), personDay.getDate(), personDay.getAbsences().size());
 
-    personDay.getAbsences().stream()
-            .filter(absence ->
-                            //Le missioni vengono inserite anche se si tratta non di "realAbsence"
-                            (absence.getIsRealAbsence() || "T".equalsIgnoreCase(absence.getExternalTypeId()))
-                            && absence.getJustifiedType() != null
-                            && !absence.getJustifiedType().equals("nothing")
-                      )
-            .forEach(absence -> {
-              String absenceTimeDetailType = Optional.ofNullable(absence.getExternalTypeId()).orElse("X");
-              log.info("Persona number={}, sincronizzazione assenza {} con tipo {}",
-                      person.getNumber(), absence.getLabel(), absenceTimeDetailType);
-              if (timeDetailTypes.contains(absenceTimeDetailType)) {
-                val personTimeDetail = personTimeDetailFromAbsence(person, absence, counter, absenceTimeDetailType);
-                repo.persistAndFlush(personTimeDetail);
-                details.add(personTimeDetail);
-                log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
-              } else {
-                log.warn("Tipo di dettaglio assenza non trovato per {}: {}", absence.getLabel(), absenceTimeDetailType);
-              }
+    aggregateAbsences(getAbsencesToSend(personDay)).forEach(absence -> {
+      String absenceTimeDetailType = Optional.ofNullable(absence.getExternalTypeId()).orElse("X");
+      log.info("Persona number={}, sincronizzazione assenza {} con tipo {}",
+              person.getNumber(), absence.getLabel(), absenceTimeDetailType);
+      if (timeDetailTypes.contains(absenceTimeDetailType)) {
+        val personTimeDetail = personTimeDetailFromAbsence(person, absence, counter, absenceTimeDetailType);
+        repo.persistAndFlush(personTimeDetail);
+        details.add(personTimeDetail);
+        log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
+      } else {
+        log.warn("Tipo di dettaglio assenza non trovato per {}: {}", absence.getLabel(), absenceTimeDetailType);
+      }
     });
     return details;
   }
