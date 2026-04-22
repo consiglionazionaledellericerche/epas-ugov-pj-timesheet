@@ -18,18 +18,18 @@ package it.cnr.iit.epas.timesheet.ugovpj.service;
 
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 import io.micrometer.core.annotation.Timed;
 import io.micrometer.core.instrument.Gauge;
@@ -127,78 +127,64 @@ public class SyncService {
     return  PersonTimeDetail.builder()
             .id(counter.incrementAndGet())
             .date(absence.getDate())
-            .minutes(absence.getJustifiedTime())
+            .minutes(Optional.ofNullable(absence.getJustifiedTime()).orElse(0))
             .number(person.getNumber())
             .cdExt(person.getNumber())
             //Uno indica che è un assenza
             .isAbsence(1)
-            .absenceDescription(absence.getLabel())
+            .absenceDescription(absence.getExtendedLabel())
             .type(absenceTimeDetailType)
             .build();
   }
 
-  private Stream<AbsenceShowTerseDto> getAbsencesToSend(PersonDayShowTerseDto personDay) {
-
-    return personDay.getAbsences().stream()
-            .filter(absence ->
-                    //Le missioni vengono inserite anche se si tratta non di "realAbsence"
-                    (absence.getIsRealAbsence() || "T".equalsIgnoreCase(absence.getExternalTypeId()))
-                            && absence.getJustifiedType() != null
-                            && !absence.getJustifiedType().equals("nothing")
-            );
+  private String normalizedAbsenceType(AbsenceShowTerseDto absence) {
+    return Strings.isNullOrEmpty(absence.getExternalTypeId())
+            ? timesheetConfig.getAbsencesType()
+            : absence.getExternalTypeId();
   }
 
-  private List<AbsenceShowTerseDto> aggregateAbsences(Stream<AbsenceShowTerseDto> absences) {
-    if (absences == null) {
-      return Lists.newArrayList();
-    }
-    absences.forEach(absence -> {
-      if (Strings.isNullOrEmpty(absence.getExternalTypeId())) {
-        //Default type X per assenza non specificata
-        absence.setExternalTypeId(timesheetConfig.getAbsencesType());
-      }
-    });
-    val timeDetailType = typeService.timeDetailTypes();
-    Map<String, AbsenceShowTerseDto> absenceMap = Maps.newHashMap();
-    absences
-            .filter(absence -> timeDetailType.contains(absence.getExternalTypeId()))
-            .forEach(absence -> {
-              if (absenceMap.containsKey(absence.getExternalTypeId())) {
-                val previousAbsence = absenceMap.get(absence.getExternalTypeId());
-                Integer previousValue = previousAbsence.getJustifiedTime();
-                previousAbsence.setJustifiedTime(Optional.ofNullable(previousValue).orElse(0) + absence.getJustifiedTime());
-                previousAbsence.setExtendedLabel(previousAbsence.getExtendedLabel() + "; " + absence.getLabel());
-              } else {
-                absenceMap.put(
-                        absence.getExternalTypeId(),
-                        absence);
-              }
-            });
-    return Lists.newArrayList(absenceMap.values());
-    }
-
   /**
-   * Sincronizza i dati delle assenze di una persona in un giorno specifico.
+   * Sincronizza i dati delle assenze di una persona in un giorno specifico,
+   * aggregando le assenze dello stesso tipo (externalTypeId).
+   * Le assenze con externalTypeId nullo o vuoto vengono aggregate sotto il tipo di default.
    */
   private List<PersonTimeDetail> syncPersonDayAbsencesWithDescription(
-          PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter){
-    val timeDetailTypes = typeService.timeDetailTypes();
+      PersonShowTerseDto person, PersonDayShowTerseDto personDay, AtomicLong counter) {
     List<PersonTimeDetail> details = Lists.newArrayList();
     log.debug("Persona number={}, data={}, sincronizzazione assenze {}",
-            person.getNumber(), personDay.getDate(), personDay.getAbsences().size());
+        person.getNumber(), personDay.getDate(), personDay.getAbsences().size());
 
-    aggregateAbsences(getAbsencesToSend(personDay)).forEach(absence -> {
-      String absenceTimeDetailType = Optional.ofNullable(absence.getExternalTypeId()).orElse("X");
-      log.info("Persona number={}, sincronizzazione assenza {} con tipo {}",
-              person.getNumber(), absence.getLabel(), absenceTimeDetailType);
-      if (timeDetailTypes.contains(absenceTimeDetailType)) {
-        val personTimeDetail = personTimeDetailFromAbsence(person, absence, counter, absenceTimeDetailType);
-        repo.persistAndFlush(personTimeDetail);
-        details.add(personTimeDetail);
-        log.debug("Salvata assenza personTimeDetail {}", personTimeDetail);
-      } else {
-        log.warn("Tipo di dettaglio assenza non trovato per {}: {}", absence.getLabel(), absenceTimeDetailType);
+    Map<String, List<AbsenceShowTerseDto>> absencesByType = personDay.getAbsences().stream()
+        .filter(absence ->
+            (absence.getIsRealAbsence() || "T".equalsIgnoreCase(absence.getExternalTypeId()))
+            && absence.getJustifiedType() != null
+            && !absence.getJustifiedType().equals("nothing"))
+        .collect(Collectors.groupingBy(this::normalizedAbsenceType,
+            LinkedHashMap::new, Collectors.toList()));
+
+    absencesByType.forEach((type, absences) -> {
+      int totalMinutes = absences.stream()
+          .mapToInt(a -> Optional.ofNullable(a.getJustifiedTime()).orElse(0))
+          .sum();
+      String description = absences.stream()
+          .map(AbsenceShowTerseDto::getLabel)
+          .collect(Collectors.joining("; "));
+      if (description.length() > 250) {
+        description = description.substring(0, 250);
       }
+      val personTimeDetail = PersonTimeDetail.builder()
+          .id(counter.incrementAndGet())
+          .date(personDay.getDate())
+          .minutes(totalMinutes)
+          .number(person.getNumber())
+          .cdExt(person.getNumber())
+          .isAbsence(1)
+          .absenceDescription(description)
+          .type(type)
+          .build();
+      repo.persistAndFlush(personTimeDetail);
+      details.add(personTimeDetail);
+      log.debug("Salvata assenza aggregata personTimeDetail {}", personTimeDetail);
     });
     return details;
   }
