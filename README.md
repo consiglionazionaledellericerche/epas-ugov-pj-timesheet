@@ -1,7 +1,7 @@
 # ePAS - UGov PJ UWeb  Timesheet
 ## ePAS - UGov PJ UWeb Timesheet - Integration service
 
-[![Supported JVM Versions](https://img.shields.io/badge/JVM-17-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
+[![Supported JVM Versions](https://img.shields.io/badge/JVM-25-brightgreen.svg?style=for-the-badge&logo=Java)](https://openjdk.java.net/install/)
 
 *ePAS - UGov PJ UWeb Timesheet* è il servizio che permette di esportare le informazioni presenti in
 [ePAS](https://epas.projects.iit.cnr.it) nelle modalità e formato previsti dal sistema di rendicontazione dei timesheet di Cineca denominato *UGov PJ UWeb Timesheet Intime*.
@@ -28,19 +28,22 @@ specificate nella configurazione di questo servizio (*epas.username*, *epas.pass
 
 ## Configurazione di ePAS per il mapping delle tipologie di assenza
 
-UGov Pj Timesheet prevede di raggruppare le assenze in alcune tipologie, per esempio:
+UGov Pj Timesheet prevede di raggruppare le assenze in alcune tipologie, ma nel caso 
+del CNR è stato deciso di utilizzare solo queste due tipologie:
 
- - *F* - FERIE MALATTIE E ROL
  - *T* - Missione / Trasferta
- - *A* - PARTECIPAZIONE ALLE ASSEMBLEE DEL PERSONALE
- - *R* - RIUNIONI RSU
- - *S* - ATTIVITà SVOLTE COME RLS
+ - *X* - Assenze
 
-è necessario definire una correlazione tra questi codici ed i codici si assenza presenti in ePAS,
-per questo motivo in ePAS è stata aggiunta la possibilità per ogni codice di assenza di specificare
+Per questo motivo in ePAS è stata aggiunta la possibilità per ogni codice di assenza di specificare
 un campo **External Id**, questo campo deve essere valorizzata per i tipi di assenza che si vogliono
 esportare verso il sistema Cineca con il rispettivo codice Cineca.
-Per esempio i codici ePAS *32*, *31*, *94* dovranno aver valorizzato il campo *External Id* con il valore *F*.
+ 
+Per caso del CNR tutte le assenze sono considerate di tipo *X*, mentre per determinare quelle di tipo
+Missione/Trasferta è necessario impostare in ePAS il campo *External Id* con il valore *T* nei codici
+di assenza per missioni, come per esempio i codici *92*, *92M*, *92E* e *92RE*.
+
+Le assenze di tipo *X* verranno esportate comprensive di una etichetta (del tipo "codice - descrizione codice")
+che permetterà di identificare l'assenza.
  
 ## Configurazione e avvio del servizio tramite docker/docker-compose
 
