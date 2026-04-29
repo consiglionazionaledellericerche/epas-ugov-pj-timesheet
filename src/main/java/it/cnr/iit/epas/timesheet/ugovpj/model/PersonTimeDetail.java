@@ -90,7 +90,7 @@ public class PersonTimeDetail {
   @Column(name = "FL_ASSENZA")
   private int isAbsence;
 
-  @Column(name = "DS_GIUSTIFICATIVO")
+  @Column(name = "DS_GIUSTIFICATIVO", length = 4000)
   private String absenceDescription;
 
 }

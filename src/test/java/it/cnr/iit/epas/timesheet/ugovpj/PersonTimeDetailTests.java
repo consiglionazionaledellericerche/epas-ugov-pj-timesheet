@@ -91,7 +91,7 @@ public class PersonTimeDetailTests extends SpringCommonTest {
     assertThat(details).hasSize(1);
     assertThat(details.getFirst().getMinutes()).isEqualTo(FULLDAY_WORKING_MINUTES);
     assertThat(details.getFirst().getType()).isEqualTo("F");
-    assertThat(details.getFirst().getAbsenceDescription()).isEqualTo("32 - Permesso");
+    assertThat(details.getFirst().getAbsenceDescription()).isEqualTo("32 - Permesso - (07:12)");
   }
 
   @Test
@@ -123,7 +123,7 @@ public class PersonTimeDetailTests extends SpringCommonTest {
     assertThat(details).hasSize(1);
     assertThat(details.get(0).getType()).isEqualTo("F");
     assertThat(details.get(0).getMinutes()).isEqualTo(90);
-    assertThat(details.get(0).getAbsenceDescription()).isEqualTo("A1 - Assenza 1; A2 - Assenza 2");
+    assertThat(details.get(0).getAbsenceDescription()).isEqualTo("A1 - Assenza 1 - (01:00); A2 - Assenza 2 - (00:30)");
   }
 
   @Test
@@ -155,7 +155,7 @@ public class PersonTimeDetailTests extends SpringCommonTest {
     assertThat(details).hasSize(1);
     assertThat(details.get(0).getType()).isEqualTo("X");
     assertThat(details.get(0).getMinutes()).isEqualTo(60);
-    assertThat(details.get(0).getAbsenceDescription()).isEqualTo("A1 - Assenza 1; A2 - Assenza 2");
+    assertThat(details.get(0).getAbsenceDescription()).isEqualTo("A1 - Assenza 1 - (00:20); A2 - Assenza 2 - (00:40)");
   }
 
   @Test
@@ -190,10 +190,11 @@ public class PersonTimeDetailTests extends SpringCommonTest {
   }
 
   @Test
-  public void absenceDescriptionIsTruncatedAt250Chars() {
+  public void absenceDescriptionIsTruncatedAt4000Chars() {
     PersonDayShowTerseDto pd = getPersonDay();
-    // Ogni label è "AX - Descrizione molto lunga per il test X" (~43 chars), 6 assenze => >250 chars
-    for (int i = 1; i <= 6; i++) {
+    // Ogni label è "AX - Descrizione molto lunga per il test X - (00:10)" (~52 chars)
+    // 80 assenze * 52 chars = ~4160 chars
+    for (int i = 1; i <= 80; i++) {
       pd.getAbsences().add(AbsenceShowTerseDto.builder()
               .code("A" + i)
               .description("Descrizione molto lunga per il test " + i)
@@ -208,7 +209,7 @@ public class PersonTimeDetailTests extends SpringCommonTest {
     List<PersonTimeDetail> details = syncService.syncPersonDay(getPerson(), pd, counter);
 
     assertThat(details).hasSize(1);
-    assertThat(details.get(0).getAbsenceDescription()).hasSizeLessThanOrEqualTo(250);
+    assertThat(details.get(0).getAbsenceDescription()).hasSizeLessThanOrEqualTo(4000);
   }
 
   @Test

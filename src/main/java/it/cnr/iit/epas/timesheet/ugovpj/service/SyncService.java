@@ -169,8 +169,8 @@ public class SyncService {
       String description = absences.stream()
           .map(AbsenceShowTerseDto::getLabel)
           .collect(Collectors.joining("; "));
-      if (description.length() > 250) {
-        description = description.substring(0, 250);
+      if (description.length() > 4000) {
+        description = description.substring(0, 4000);
       }
       val personTimeDetail = PersonTimeDetail.builder()
           .id(counter.incrementAndGet())

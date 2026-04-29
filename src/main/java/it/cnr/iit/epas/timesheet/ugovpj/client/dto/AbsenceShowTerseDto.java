@@ -53,7 +53,7 @@ public class AbsenceShowTerseDto {
 
   @JsonIgnore
   public String getLabel() {
-    return code + " - " + description;
+    return String.format("%s - %s - (%s)", code, description, getJustifiedTimeFormatted());
   }
 
   @JsonIgnore
@@ -63,5 +63,15 @@ public class AbsenceShowTerseDto {
     } else {
       return getLabel();
     }
+  }
+
+  @JsonIgnore
+  public String getJustifiedTimeFormatted() {
+    if (justifiedTime == null) {
+      return "00:00";
+    }
+    int hours = justifiedTime / 60;
+    int minutes = justifiedTime % 60;
+    return String.format("%02d:%02d", hours, minutes);
   }
 }
