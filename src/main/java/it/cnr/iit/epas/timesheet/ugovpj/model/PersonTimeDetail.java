@@ -38,11 +38,11 @@ import lombok.ToString;
 @NamedStoredProcedureQueries({
     @NamedStoredProcedureQuery(
         name=PersonTimeDetail.LOAD_DETAILS_PROCEDURE_NAME,
-        procedureName="IE_PJ.TS_P_CARICA_MARCATURE"
+        procedureName="IE_PJ.P_CARICA_MARCATURE"
         ),
     @NamedStoredProcedureQuery(
         name=PersonTimeDetail.LOAD_DETAILS_JOB_PROCEDURE_NAME,
-        procedureName="IE_PJ.TS_P_CARICA_MARCATURE_JOB"
+        procedureName=" IE_PJ.P_CARICA_MARCATURE_JOB"
         )
 })
 @NoArgsConstructor
