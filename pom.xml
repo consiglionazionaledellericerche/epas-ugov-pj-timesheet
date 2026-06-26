@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>4.0.5</version>
+		<version>4.0.7</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>it.cnr.iit.epas.timesheet</groupId>
 	<artifactId>ugov-pj</artifactId>
-	<version>0.2.0</version>
+	<version>0.3.0</version>
 	<name>epas-ugov-pj-timesheet</name>
 	<description>Servizi di integrazione con UGOV-PJ Timesheet</description>
 	<properties>

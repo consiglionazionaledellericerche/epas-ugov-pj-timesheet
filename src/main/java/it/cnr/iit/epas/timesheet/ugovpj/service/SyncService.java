@@ -16,6 +16,8 @@
  */
 package it.cnr.iit.epas.timesheet.ugovpj.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.LinkedHashMap;
@@ -27,6 +29,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
@@ -70,8 +75,16 @@ public class SyncService {
 
   private final SemaphoreService semaphore;
 
+  private final PlatformTransactionManager transactionManager;
+
+  @PersistenceContext
+  private EntityManager entityManager;
+
   @Value("${timesheet.number.length.max}")
   private Integer numberMaxLenght;
+
+  @Value("${timesheet.sync.batch-size:100}")
+  private int batchSize;
 
   /**
    * Sincronizza il dato del tempo a lavoro di una persona in un giorno specifico.
@@ -117,7 +130,11 @@ public class SyncService {
           .isAbsence(0)
           .type(timesheetConfig.getStampingsType())
           .build();
-    repo.persistAndFlush(personTimeDetail);
+    repo.persist(personTimeDetail);
+    if (counter.get() % batchSize == 0 && TransactionSynchronizationManager.isActualTransactionActive()) {
+      entityManager.flush();
+      entityManager.clear();
+    }
     log.debug("Salvato tempo al lavoro personTimeDetail {}", personTimeDetail);
     return Optional.of(personTimeDetail);
   }
@@ -182,7 +199,11 @@ public class SyncService {
           .absenceDescription(description)
           .type(type)
           .build();
-      repo.persistAndFlush(personTimeDetail);
+      repo.persist(personTimeDetail);
+      if (counter.get() % batchSize == 0 && TransactionSynchronizationManager.isActualTransactionActive()) {
+        entityManager.flush();
+        entityManager.clear();
+      }
       details.add(personTimeDetail);
       log.debug("Salvata assenza aggregata personTimeDetail {}", personTimeDetail);
     });
@@ -248,16 +269,19 @@ public class SyncService {
   public List<PersonTimeDetail> syncOfficeMonth(
       long officeId, YearMonth yearMonth, Optional<LocalDate> notBefore,
       AtomicLong counter) {
-    log.info("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}", 
+    log.info("Inizio sincronizzazione dell'ufficio id={} del {}, notBefore={}",
         officeId, yearMonth, notBefore);
     long startTime = System.currentTimeMillis();
     Timer.Sample timer = Timer.start(meterRegistry);
     List<PersonTimeDetail> details = Lists.newArrayList();
-      val monthRecaps = epasClient.getMonthRecap(officeId, yearMonth.getYear(), yearMonth.getMonthValue());
+    val monthRecaps = epasClient.getMonthRecap(officeId, yearMonth.getYear(), yearMonth.getMonthValue());
+    new TransactionTemplate(transactionManager).execute(status -> {
       monthRecaps.forEach(monthRecap -> {
         details.addAll(syncPersonMonth(monthRecap, notBefore, counter));
       });
-    log.info("Terminata sincronizzazione dell'ufficio id={} del {} in {} secondi", 
+      return null;
+    });
+    log.info("Terminata sincronizzazione dell'ufficio id={} del {} in {} secondi",
         officeId, yearMonth, ((System.currentTimeMillis() - startTime) / 1000));
     timer.stop(Timer.builder("epas_sync_office_month")
         .description("Timer della sincronizzazione dei dati di un mese di un ufficio")
